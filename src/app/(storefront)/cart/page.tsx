@@ -77,7 +77,7 @@ export default function CartPage() {
 
                 {/* Details */}
                 <div className="flex-1">
-                  <Link href={`/products/${item.product_id}`} className="font-medium hover:text-primary-600">
+                  <Link href={`/products/${item.product_slug || item.product_id}`} className="font-medium hover:text-primary-600">
                     {item.product_name}
                   </Link>
                   <p className="text-sm text-accent-500 mt-1">{formatPrice(item.product_price)}</p>

@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { adminApi } from '@/lib/api'
+import { useAuthStore } from '@/stores/auth'
 import { Shield, CheckCircle, AlertCircle } from 'lucide-react'
 
 export default function AdminSetupPage() {
@@ -37,9 +38,9 @@ export default function AdminSetupPage() {
 
       if (!response.data.needs_setup) {
         // Admin already exists, redirect to login
-        setTimeout(() => router.push('/admin/login'), 2000)
+        setTimeout(() => router.push('/admin-login'), 2000)
       }
-    } catch (err) {
+    } catch {
       setError('Failed to check setup status')
     } finally {
       setIsChecking(false)
@@ -71,6 +72,7 @@ export default function AdminSetupPage() {
 
       // Store the token
       localStorage.setItem('accessToken', response.data.access_token)
+      await useAuthStore.getState().fetchUser()
       setSuccess(true)
 
       // Redirect to admin dashboard
@@ -101,7 +103,7 @@ export default function AdminSetupPage() {
             <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
             <h1 className="text-xl font-semibold mb-2">System Already Configured</h1>
             <p className="text-accent-500 mb-6">{setupMessage}</p>
-            <Link href="/admin/login">
+            <Link href="/admin-login">
               <Button className="w-full">Go to Admin Login</Button>
             </Link>
           </div>
@@ -216,7 +218,7 @@ export default function AdminSetupPage() {
           </form>
 
           <div className="mt-6 text-center">
-            <Link href="/admin/login" className="text-sm text-accent-500 hover:text-accent-700">
+            <Link href="/admin-login" className="text-sm text-accent-500 hover:text-accent-700">
               Already have an account? Sign in
             </Link>
           </div>

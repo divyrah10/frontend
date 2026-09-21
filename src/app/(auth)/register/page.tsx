@@ -57,7 +57,7 @@ export default function RegisterPage() {
       <div className="w-full max-w-md">
         <div className="bg-white p-8 shadow-sm">
           <div className="text-center mb-8">
-            <Link href="/" className="font-display text-2xl">LOREM IPSUM</Link>
+            <Link href="/" className="font-display text-2xl">NOT JUST DARK</Link>
             <h1 className="text-xl mt-4">Create Account</h1>
           </div>
 

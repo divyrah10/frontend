@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,6 +9,7 @@ import { useAuthStore } from '@/stores/auth'
 import { addressesApi, ordersApi, paymentsApi } from '@/lib/api'
 import { Address } from '@/types'
 import { formatPrice } from '@/lib/utils'
+import toast from 'react-hot-toast'
 
 declare global {
   interface Window {
@@ -25,6 +26,10 @@ export default function CheckoutPage() {
   const [selectedAddressId, setSelectedAddressId] = useState<string>('')
   const [isLoading, setIsLoading] = useState(true)
   const [isProcessing, setIsProcessing] = useState(false)
+  const idempotencyKey = useRef<string | undefined>(undefined)
+  if (!idempotencyKey.current && typeof crypto !== 'undefined') {
+    idempotencyKey.current = crypto.randomUUID()
+  }
   const [showNewAddress, setShowNewAddress] = useState(false)
   const [newAddress, setNewAddress] = useState({
     full_name: '',
@@ -108,6 +113,7 @@ export default function CheckoutPage() {
           attributes: item.attributes,
         })),
         shipping_address_id: selectedAddressId,
+        idempotency_key: idempotencyKey.current,
       })
 
       const order = orderResponse.data
@@ -148,7 +154,13 @@ export default function CheckoutPage() {
         },
       }
 
+      if (!window.Razorpay) {
+        throw new Error('Payment checkout failed to load')
+      }
       const razorpay = new window.Razorpay(options)
+      razorpay.on('payment.failed', () => {
+        toast.error('Payment was not completed. Your order can be retried from your account.')
+      })
       razorpay.open()
     } catch (error) {
       console.error('Checkout error:', error)

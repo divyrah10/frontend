@@ -1,13 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useAuthStore } from '@/stores/auth'
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirect = searchParams.get('redirect') || '/'
@@ -35,7 +35,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <div className="bg-white p-8 shadow-sm">
           <div className="text-center mb-8">
-            <Link href="/" className="font-display text-2xl">LOREM IPSUM</Link>
+            <Link href="/" className="font-display text-2xl">NOT JUST DARK</Link>
             <h1 className="text-xl mt-4">Sign In</h1>
           </div>
 
@@ -84,5 +84,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-accent-50" />}>
+      <LoginForm />
+    </Suspense>
   )
 }

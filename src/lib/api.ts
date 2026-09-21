@@ -32,10 +32,11 @@ api.interceptors.response.use(
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true
+      const isLoginRequest = originalRequest.url?.includes('/auth/login') || originalRequest.url?.includes('/admin/login')
 
       try {
         const refreshToken = localStorage.getItem('refreshToken')
-        if (refreshToken) {
+        if (refreshToken && !isLoginRequest) {
           const response = await axios.post(`${API_URL}/auth/refresh`, null, {
             params: { refresh_token: refreshToken }
           })
@@ -47,10 +48,15 @@ api.interceptors.response.use(
           originalRequest.headers.Authorization = `Bearer ${access_token}`
           return api(originalRequest)
         }
+        if (!isLoginRequest) {
+          localStorage.removeItem('accessToken')
+          localStorage.removeItem('refreshToken')
+          window.location.href = window.location.pathname.startsWith('/admin') ? '/admin-login' : '/login'
+        }
       } catch {
         localStorage.removeItem('accessToken')
         localStorage.removeItem('refreshToken')
-        window.location.href = '/login'
+        window.location.href = window.location.pathname.startsWith('/admin') ? '/admin-login' : '/login'
       }
     }
 

@@ -15,6 +15,7 @@ const navLinks = [
   { href: '/products?category=men', label: 'Men' },
   { href: '/products?category=accessories', label: 'Accessories' },
   { href: '/products?is_featured=true', label: 'New Arrivals', highlight: true },
+  { href: '/compare', label: 'Compare' },
 ]
 
 export function Header() {

@@ -78,9 +78,13 @@ export const useAuthStore = create<AuthState>()(
         }
 
         try {
-          await get().fetchUser()
+          const response = await usersApi.getMe()
+          set({ user: response.data, isAuthenticated: true })
           return true
         } catch {
+          localStorage.removeItem('accessToken')
+          localStorage.removeItem('refreshToken')
+          set({ user: null, isAuthenticated: false })
           return false
         }
       },

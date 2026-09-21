@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { adminApi } from '@/lib/api'
 import toast from 'react-hot-toast'
+import { useAuthStore } from '@/stores/auth'
 
 export default function AdminLoginPage() {
   const router = useRouter()
@@ -37,6 +38,8 @@ export default function AdminLoginPage() {
         localStorage.removeItem('accessToken')
         return
       }
+
+      await useAuthStore.getState().fetchUser()
 
       toast.success(`Welcome back, ${user.full_name}!`)
       router.push('/admin/dashboard')

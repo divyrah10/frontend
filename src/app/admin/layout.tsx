@@ -12,15 +12,18 @@ import {
   LogOut,
   Menu,
   X,
-  ChevronDown,
   BarChart3,
   MessageSquare,
+  Tags,
+  Warehouse,
 } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth'
 
 const navigation = [
   { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
   { name: 'Products', href: '/admin/products', icon: Package },
+  { name: 'Categories', href: '/admin/categories', icon: Tags },
+  { name: 'Inventory', href: '/admin/inventory', icon: Warehouse },
   { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
   { name: 'Customers', href: '/admin/customers', icon: Users },
   { name: 'Reviews', href: '/admin/reviews', icon: MessageSquare },
@@ -31,7 +34,7 @@ const navigation = [
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
-  const { user, isAuthenticated, logout, checkAuth } = useAuthStore()
+  const { user, logout, checkAuth } = useAuthStore()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -43,9 +46,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         return
       }
 
+      const currentUser = useAuthStore.getState().user
       // Check if user has admin permissions
       const adminRoles = ['super_admin', 'store_manager', 'customer_service']
-      if (!user?.role?.name || !adminRoles.includes(user.role.name)) {
+      if (!currentUser?.role?.name || !adminRoles.includes(currentUser.role.name)) {
         router.push('/')
         return
       }
@@ -88,7 +92,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </button>
         </div>
 
-        <nav className="p-4">
+        <nav className="p-4 max-h-[calc(100vh-9rem)] overflow-y-auto pb-24">
           <ul className="space-y-1">
             {navigation.map((item) => {
               const isActive = pathname === item.href
@@ -120,7 +124,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             View Store &rarr;
           </Link>
           <button
-            onClick={logout}
+            onClick={() => { logout(); router.push('/admin-login') }}
             className="flex items-center gap-3 px-3 py-2 text-accent-300 hover:text-white transition-colors w-full"
           >
             <LogOut size={18} />

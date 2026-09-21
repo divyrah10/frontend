@@ -4,11 +4,12 @@ import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { Heart, ShoppingBag, Minus, Plus, ChevronLeft, ChevronRight, Star } from 'lucide-react'
+import { Heart, ShoppingBag, Minus, Plus, ChevronLeft, ChevronRight, Star, GitCompareArrows } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ProductCard } from '@/components/storefront/product-card'
-import { productsApi, reviewsApi } from '@/lib/api'
+import { productsApi, reviewsApi, compareApi } from '@/lib/api'
+import toast from 'react-hot-toast'
 import { useCartStore } from '@/stores/cart'
 import { useWishlistStore } from '@/stores/wishlist'
 import { useAuthStore } from '@/stores/auth'
@@ -81,6 +82,16 @@ export default function ProductDetailPage() {
       } else {
         await addToWishlist(product.id)
       }
+    }
+  }
+
+  const handleCompare = async () => {
+    if (!product) return
+    try {
+      await compareApi.add(product.id)
+      toast.success('Added to comparison')
+    } catch (error: any) {
+      toast.error(error.response?.data?.detail || 'Could not add to comparison')
     }
   }
 
@@ -282,6 +293,9 @@ export default function ProductDetailPage() {
                   <Heart size={20} fill={inWishlist ? 'currentColor' : 'none'} />
                 </Button>
               </div>
+              <button onClick={handleCompare} className="text-xs uppercase tracking-[0.18em] text-noir-500 hover:text-noir-950 transition-colors">
+                <GitCompareArrows size={14} className="inline mr-2" />Add to comparison
+              </button>
             </div>
           ) : (
             <div className="mb-8">
