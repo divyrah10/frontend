@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Package, ShoppingCart, Users, TrendingUp, AlertTriangle, MessageSquare } from 'lucide-react'
+import { Package, ShoppingCart, Users, TrendingUp, AlertTriangle, MessageSquare, Eye, Mail, DoorOpen } from 'lucide-react'
 import { dashboardApi } from '@/lib/api'
 import { DashboardStats } from '@/types'
 import { formatPrice } from '@/lib/utils'
@@ -101,6 +101,32 @@ export default function AdminDashboardPage() {
           </div>
         ))}
       </div>
+
+      {/* Early Access Funnel */}
+      <section className="mb-8 border border-accent-100 bg-white">
+        <div className="flex flex-col gap-2 border-b border-accent-100 p-5 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="mb-1 text-[10px] uppercase tracking-[0.22em] text-accent-400">Instagram launch</p>
+            <h2 className="font-display text-2xl">Early Access Funnel</h2>
+          </div>
+          <p className="text-xs text-accent-500">Tracked from @{stats?.early_access.instagram_handle}</p>
+        </div>
+        <div className="grid divide-y divide-accent-100 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+          {[
+            { label: 'Landing visits', value: stats?.early_access.views || 0, icon: Eye },
+            { label: 'Email signups', value: stats?.early_access.leads || 0, icon: Mail },
+            { label: 'Store entries', value: stats?.early_access.entries || 0, icon: DoorOpen },
+          ].map((metric) => (
+            <div key={metric.label} className="flex items-center justify-between p-5">
+              <div>
+                <p className="text-xs text-accent-500">{metric.label}</p>
+                <p className="mt-1 text-3xl font-medium">{metric.value}</p>
+              </div>
+              <metric.icon size={20} className="text-accent-400" strokeWidth={1.5} />
+            </div>
+          ))}
+        </div>
+      </section>
 
       {/* Alerts */}
       {(stats?.products.low_stock || 0) > 0 && (

@@ -18,7 +18,7 @@ api.interceptors.request.use((config) => {
       config.headers.Authorization = `Bearer ${token}`
     }
 
-    // Add session ID for guest cart/compare
+    // Add session ID for the guest cart
     config.headers['X-Session-Id'] = getSessionId()
   }
   return config
@@ -33,6 +33,23 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true
       const isLoginRequest = originalRequest.url?.includes('/auth/login') || originalRequest.url?.includes('/admin/login')
+
+      const clearExpiredSession = () => {
+        localStorage.removeItem('accessToken')
+        localStorage.removeItem('refreshToken')
+      }
+
+      const redirectFromProtectedPage = () => {
+        const path = window.location.pathname
+        const isAdminPage = path.startsWith('/admin/') && path !== '/admin/setup'
+        const isCustomerPage = path === '/checkout' || path.startsWith('/account')
+
+        if (isAdminPage) {
+          window.location.href = '/admin-login'
+        } else if (isCustomerPage) {
+          window.location.href = `/login?redirect=${encodeURIComponent(path)}`
+        }
+      }
 
       try {
         const refreshToken = localStorage.getItem('refreshToken')
@@ -49,14 +66,12 @@ api.interceptors.response.use(
           return api(originalRequest)
         }
         if (!isLoginRequest) {
-          localStorage.removeItem('accessToken')
-          localStorage.removeItem('refreshToken')
-          window.location.href = window.location.pathname.startsWith('/admin') ? '/admin-login' : '/login'
+          clearExpiredSession()
+          redirectFromProtectedPage()
         }
       } catch {
-        localStorage.removeItem('accessToken')
-        localStorage.removeItem('refreshToken')
-        window.location.href = window.location.pathname.startsWith('/admin') ? '/admin-login' : '/login'
+        clearExpiredSession()
+        redirectFromProtectedPage()
       }
     }
 
@@ -148,14 +163,6 @@ export const wishlistApi = {
   check: (productId: string) => api.get(`/wishlist/check/${productId}`),
 }
 
-// Compare API
-export const compareApi = {
-  get: () => api.get('/compare'),
-  add: (productId: string) => api.post(`/compare/${productId}`),
-  remove: (productId: string) => api.delete(`/compare/${productId}`),
-  clear: () => api.delete('/compare'),
-}
-
 // Reviews API
 export const reviewsApi = {
   getForProduct: (productId: string, page?: number) =>
@@ -179,6 +186,19 @@ export const ordersApi = {
     api.get('/orders/admin/all', { params }),
   updateStatus: (id: string, status: string, notes?: string) =>
     api.put(`/orders/${id}/status`, { status, admin_notes: notes }),
+  getPublicTracking: (token: string) => api.get(`/orders/track/${token}`),
+  updateShipment: (id: string, data: {
+    provider?: string
+    provider_shipment_id?: string
+    awb_code?: string
+    courier_name?: string
+    status?: string
+    tracking_url?: string
+    estimated_delivery?: string
+    event_title?: string
+    event_description?: string
+    event_location?: string
+  }) => api.put(`/orders/admin/${id}/shipment`, data),
 }
 
 // Addresses API
@@ -197,6 +217,25 @@ export const paymentsApi = {
     api.post('/payments/create-order', { order_id: orderId, currency }),
   verify: (data: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) =>
     api.post('/payments/verify', data),
+}
+
+// Early Access API
+type EarlyAccessAttribution = {
+  session_id: string
+  source: string
+  medium: string
+  campaign: string
+  content: string
+}
+
+export const earlyAccessApi = {
+  track: (data: EarlyAccessAttribution & {
+    event_type: 'page_view' | 'store_entered'
+    landing_path: string
+  }) => api.post('/early-access/events', data),
+
+  join: (data: EarlyAccessAttribution & { email: string }) =>
+    api.post('/early-access/leads', data),
 }
 
 // Users API

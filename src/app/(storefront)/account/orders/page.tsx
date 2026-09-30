@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { CheckCircle2, ChevronDown, Package, Truck } from 'lucide-react'
+import { ArrowUpRight, CheckCircle2, ChevronDown, Package, Truck } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { ordersApi } from '@/lib/api'
 import { Order } from '@/types'
@@ -79,7 +79,7 @@ export default function AccountOrdersPage() {
                       <p className="text-xs tracking-[0.2em] uppercase text-noir-400">{new Date(order.created_at).toLocaleDateString()}</p>
                       <p className="font-medium truncate mt-1">{order.order_number}</p>
                     </div>
-                    <div className="text-right hidden sm:block"><p>{formatPrice(order.total)}</p><p className="text-xs uppercase tracking-wider text-noir-400">{order.status}</p></div>
+                    <div className="text-right hidden sm:block"><p>{formatPrice(order.total)}</p><p className="text-xs uppercase tracking-wider text-noir-400">{(order.shipment?.status || order.status).replaceAll('_', ' ')}</p></div>
                     <ChevronDown className={`transition-transform ${openOrder === order.id ? 'rotate-180' : ''}`} size={18} />
                   </button>
                   {openOrder === order.id && (
@@ -89,7 +89,14 @@ export default function AccountOrdersPage() {
                       </div>
                       <div className="mt-6 flex justify-between items-center gap-4">
                         <p className="text-sm text-noir-500">Shipping to {order.shipping_address.city}</p>
-                        {['pending', 'confirmed'].includes(order.status) && <Button variant="outline" size="sm" onClick={() => cancelOrder(order.id)}>Cancel order</Button>}
+                        <div className="flex flex-wrap justify-end gap-3">
+                          {order.shipment && (
+                            <Link href={`/track/${order.shipment.tracking_token}`} className="inline-flex items-center gap-2 border-b border-noir-950 pb-1 text-sm font-medium">
+                              Track order <ArrowUpRight size={14} />
+                            </Link>
+                          )}
+                          {['pending', 'confirmed'].includes(order.status) && <Button variant="outline" size="sm" onClick={() => cancelOrder(order.id)}>Cancel order</Button>}
+                        </div>
                       </div>
                     </div>
                   )}

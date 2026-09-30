@@ -57,7 +57,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       setIsLoading(false)
     }
     verify()
-  }, [])
+  }, [checkAuth, router])
 
   if (isLoading) {
     return (

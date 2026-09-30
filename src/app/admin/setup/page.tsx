@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -26,11 +26,7 @@ export default function AdminSetupPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
 
-  useEffect(() => {
-    checkSetupNeeded()
-  }, [])
-
-  const checkSetupNeeded = async () => {
+  const checkSetupNeeded = useCallback(async () => {
     try {
       const response = await adminApi.checkSetup()
       setNeedsSetup(response.data.needs_setup)
@@ -45,7 +41,11 @@ export default function AdminSetupPage() {
     } finally {
       setIsChecking(false)
     }
-  }
+  }, [router])
+
+  useEffect(() => {
+    checkSetupNeeded()
+  }, [checkSetupNeeded])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

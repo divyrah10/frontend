@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Plus, Edit, Trash2, Search } from 'lucide-react'
@@ -18,7 +18,7 @@ export default function AdminProductsPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     setIsLoading(true)
     try {
       const response = await productsApi.list({
@@ -33,11 +33,11 @@ export default function AdminProductsPage() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [currentPage, search])
 
   useEffect(() => {
     fetchProducts()
-  }, [currentPage])
+  }, [fetchProducts])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()

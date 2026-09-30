@@ -40,15 +40,16 @@ function LoginForm() {
           </div>
 
           {error && (
-            <div className="bg-red-50 text-red-600 p-3 text-sm mb-6">
+            <div role="alert" className="bg-red-50 text-red-600 p-3 text-sm mb-6">
               {error}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Email</label>
+              <label htmlFor="login-email" className="block text-sm font-medium mb-1">Email</label>
               <Input
+                id="login-email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -58,8 +59,9 @@ function LoginForm() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Password</label>
+              <label htmlFor="login-password" className="block text-sm font-medium mb-1">Password</label>
               <Input
+                id="login-password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

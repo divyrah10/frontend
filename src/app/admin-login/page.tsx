@@ -58,25 +58,27 @@ export default function AdminLoginPage() {
         <div className="bg-white p-8 shadow-lg rounded-lg">
           <div className="text-center mb-8">
             <Image
-              src="/wordmark-black.png"
+              src="/logo-black.png"
               alt="NOT JUST DARK"
-              width={180}
-              height={74}
-              className="mx-auto mb-4 object-contain"
+              width={96}
+              height={60}
+              priority
+              className="mx-auto mb-4 h-auto w-24 object-contain"
             />
             <p className="text-accent-500 mt-2">Admin Portal</p>
           </div>
 
           {error && (
-            <div className="bg-red-50 text-red-600 p-3 text-sm mb-6 rounded">
+            <div role="alert" className="bg-red-50 text-red-600 p-3 text-sm mb-6 rounded">
               {error}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Email</label>
+              <label htmlFor="admin-email" className="block text-sm font-medium mb-1">Email</label>
               <Input
+                id="admin-email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -86,8 +88,9 @@ export default function AdminLoginPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Password</label>
+              <label htmlFor="admin-password" className="block text-sm font-medium mb-1">Password</label>
               <Input
+                id="admin-password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

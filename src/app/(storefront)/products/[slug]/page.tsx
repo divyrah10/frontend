@@ -4,17 +4,17 @@ import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { Heart, ShoppingBag, Minus, Plus, ChevronLeft, ChevronRight, Star, GitCompareArrows } from 'lucide-react'
+import { Heart, ShoppingBag, Minus, Plus, ChevronLeft, ChevronRight, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ProductCard } from '@/components/storefront/product-card'
-import { productsApi, reviewsApi, compareApi } from '@/lib/api'
-import toast from 'react-hot-toast'
+import { productsApi, reviewsApi } from '@/lib/api'
 import { useCartStore } from '@/stores/cart'
 import { useWishlistStore } from '@/stores/wishlist'
 import { useAuthStore } from '@/stores/auth'
 import { Product, Review, ReviewStats } from '@/types'
 import { formatPrice } from '@/lib/utils'
+import toast from 'react-hot-toast'
 
 export default function ProductDetailPage() {
   const { slug } = useParams()
@@ -24,6 +24,7 @@ export default function ProductDetailPage() {
   const [reviewStats, setReviewStats] = useState<ReviewStats | null>(null)
   const [selectedImage, setSelectedImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
+  const [selectedSize, setSelectedSize] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('description')
 
@@ -39,6 +40,7 @@ export default function ProductDetailPage() {
       try {
         const response = await productsApi.getBySlug(slug as string)
         setProduct(response.data)
+        setSelectedSize('')
 
         // Fetch reviews
         const [reviewsRes, statsRes] = await Promise.all([
@@ -67,7 +69,13 @@ export default function ProductDetailPage() {
 
   const handleAddToCart = async () => {
     if (product) {
-      await addToCart(product.id, quantity)
+      const sizes: string[] = product.attributes?.sizes || []
+      if (sizes.length > 0 && !selectedSize) {
+        toast.error('Select your size before adding this piece')
+        return
+      }
+      await addToCart(product.id, quantity, selectedSize ? { size: selectedSize } : {})
+      toast.success(`${product.name} added to your bag`)
     }
   }
 
@@ -82,16 +90,6 @@ export default function ProductDetailPage() {
       } else {
         await addToWishlist(product.id)
       }
-    }
-  }
-
-  const handleCompare = async () => {
-    if (!product) return
-    try {
-      await compareApi.add(product.id)
-      toast.success('Added to comparison')
-    } catch (error: any) {
-      toast.error(error.response?.data?.detail || 'Could not add to comparison')
     }
   }
 
@@ -156,6 +154,8 @@ export default function ProductDetailPage() {
                 src={product.images[selectedImage]}
                 alt={product.name}
                 fill
+                sizes="(max-width: 1023px) 100vw, 50vw"
+                priority
                 className="object-cover transition-transform duration-500 hover:scale-105"
               />
             ) : (
@@ -199,7 +199,7 @@ export default function ProductDetailPage() {
                   className={`relative w-20 h-20 shrink-0 border-2 ${selectedImage === index ? 'border-accent-900' : 'border-transparent'}`}
                   onClick={() => setSelectedImage(index)}
                 >
-                  <Image src={image} alt="" fill className="object-cover" />
+                  <Image src={image} alt="" fill sizes="80px" className="object-cover" />
                 </button>
               ))}
             </div>
@@ -249,6 +249,32 @@ export default function ProductDetailPage() {
             <p className="text-noir-600 mb-6 leading-relaxed">{product.short_description}</p>
           )}
 
+          {Array.isArray(product.attributes?.sizes) && product.attributes.sizes.length > 0 && (
+            <div className="mb-7 border-y border-noir-950/10 py-5">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="text-xs font-medium uppercase tracking-[0.18em] text-noir-700">Select size</span>
+                <Link href="/size-guide" className="text-xs text-noir-500 underline decoration-noir-300 underline-offset-4 hover:text-noir-950">Size guide</Link>
+              </div>
+              <div className="flex flex-wrap gap-2" role="group" aria-label="Available sizes">
+                {product.attributes.sizes.map((size: string) => (
+                  <button
+                    key={size}
+                    type="button"
+                    aria-pressed={selectedSize === size}
+                    onClick={() => setSelectedSize(size)}
+                    className={`h-11 min-w-12 border px-4 text-xs tracking-[0.12em] transition-all duration-300 ${
+                      selectedSize === size
+                        ? 'border-noir-950 bg-noir-950 text-white'
+                        : 'border-noir-200 bg-transparent text-noir-700 hover:border-noir-950'
+                    }`}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Quantity and Add to Cart */}
           {product.in_stock ? (
             <div className="space-y-5 mb-8">
@@ -293,9 +319,6 @@ export default function ProductDetailPage() {
                   <Heart size={20} fill={inWishlist ? 'currentColor' : 'none'} />
                 </Button>
               </div>
-              <button onClick={handleCompare} className="text-xs uppercase tracking-[0.18em] text-noir-500 hover:text-noir-950 transition-colors">
-                <GitCompareArrows size={14} className="inline mr-2" />Add to comparison
-              </button>
             </div>
           ) : (
             <div className="mb-8">

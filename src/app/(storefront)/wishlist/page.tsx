@@ -19,7 +19,7 @@ export default function WishlistPage() {
     if (isAuthenticated) {
       fetchWishlist()
     }
-  }, [isAuthenticated])
+  }, [fetchWishlist, isAuthenticated])
 
   const handleAddToCart = async (productId: string) => {
     await addToCart(productId)
@@ -66,6 +66,7 @@ export default function WishlistPage() {
                     src={item.product_image}
                     alt={item.product_name}
                     fill
+                    sizes="(max-width: 1023px) 50vw, 25vw"
                     className="object-cover"
                   />
                 ) : (

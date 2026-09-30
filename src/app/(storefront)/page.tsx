@@ -3,11 +3,12 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useState, useRef } from 'react'
-import { ArrowRight, ArrowDown } from 'lucide-react'
+import { ArrowRight, Pause, Play } from 'lucide-react'
 import { ProductCard } from '@/components/storefront/product-card'
 import { Reveal } from '@/components/reveal'
 import { productsApi, categoriesApi } from '@/lib/api'
 import { Product, Category } from '@/types'
+import { cloudinaryImage, heroVideoUrl } from '@/lib/media'
 
 const features = [
   {
@@ -39,6 +40,11 @@ const marqueeItems = [
   'Crafted in India',
   'Where Darkness Meets Elegance',
 ]
+
+const categoryCardImages: Record<string, string> = {
+  women: cloudinaryImage('not-just-dark/products/roma-crop-tee-black/02'),
+  men: cloudinaryImage('not-just-dark/products/texas-tee-navy/02'),
+}
 
 function HeroPanel({
   href,
@@ -74,6 +80,7 @@ function HeroPanel({
           src={image}
           alt={alt}
           fill
+          sizes="(max-width: 1023px) 100vw, 50vw"
           className={`object-cover transition-opacity duration-700 ${
             loaded ? 'animate-kenburns opacity-100' : 'scale-[1.12] opacity-0'
           }`}
@@ -144,7 +151,26 @@ export default function HomePage() {
   const [categories, setCategories] = useState<Category[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [heroLoaded, setHeroLoaded] = useState(false)
-  const heroRef = useRef<HTMLDivElement>(null)
+  const [isHeroVideoPlaying, setIsHeroVideoPlaying] = useState(false)
+  const heroVideoRef = useRef<HTMLVideoElement>(null)
+
+  const categoryCards = [
+    ...categories
+      .filter((category) => category.slug !== 'accessories')
+      .slice(0, 2)
+      .map((category) => ({
+      key: category.id,
+      href: `/products?category=${category.slug}`,
+      name: category.name,
+      image: categoryCardImages[category.slug] ?? category.image_url,
+      })),
+    {
+      key: 'new-arrivals',
+      href: '/products?is_featured=true',
+      name: 'New Arrivals',
+      image: cloudinaryImage('not-just-dark/products/london-tee-black/01'),
+    },
+  ]
 
   useEffect(() => {
     const fetchData = async () => {
@@ -165,16 +191,77 @@ export default function HomePage() {
     setHeroLoaded(true)
   }, [])
 
+  const toggleHeroVideo = () => {
+    const video = heroVideoRef.current
+    if (!video) return
+
+    if (video.paused) {
+      void video.play()
+    } else {
+      video.pause()
+    }
+  }
+
   return (
     <div className="min-h-screen bg-white">
-      {/* Hero Section - Cinematic Split */}
-      <section
-        ref={heroRef}
-        className="relative h-[calc(100svh-7.7rem)] lg:h-[calc(100vh-8.2rem)] flex flex-col lg:flex-row overflow-hidden bg-noir-950"
-      >
+      {/* Full-bleed Campaign Film */}
+      <section className="relative h-[calc(100svh-4.5rem)] min-h-[560px] lg:h-[calc(100vh-5rem)] overflow-hidden bg-noir-950 text-white">
+        <video
+          ref={heroVideoRef}
+          className="absolute inset-0 h-full w-full object-cover"
+          src={heroVideoUrl}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          onPlay={() => setIsHeroVideoPlaying(true)}
+          onPause={() => setIsHeroVideoPlaying(false)}
+          aria-label="NOT JUST DARK campaign film"
+        >
+          Your browser does not support embedded video.
+        </video>
+
+        <div
+          className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/55"
+          aria-hidden
+        />
+
+        <div
+          className={`absolute inset-x-0 bottom-0 flex items-end justify-between gap-6 p-6 transition-all duration-1000 lg:p-12 ${
+            heroLoaded ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+          }`}
+          style={{ transitionDelay: '400ms' }}
+        >
+          <div>
+            <p className="mb-3 text-[9px] font-light uppercase tracking-[0.45em] text-white/70">
+              Campaign 2026
+            </p>
+            <h1 className="font-display text-4xl leading-none text-white lg:text-6xl">
+              Not Just <span className="italic font-normal">Dark</span>
+            </h1>
+          </div>
+
+          <button
+            type="button"
+            onClick={toggleHeroVideo}
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/40 bg-black/15 text-white backdrop-blur-sm transition-all duration-300 hover:border-white hover:bg-white hover:text-noir-950"
+            aria-label={isHeroVideoPlaying ? 'Pause campaign film' : 'Play campaign film'}
+          >
+            {isHeroVideoPlaying ? (
+              <Pause size={15} strokeWidth={1.5} fill="currentColor" />
+            ) : (
+              <Play size={15} strokeWidth={1.5} fill="currentColor" className="ml-0.5" />
+            )}
+          </button>
+        </div>
+      </section>
+
+      {/* Women and Men Collections */}
+      <section className="relative flex h-[100svh] min-h-[680px] flex-col overflow-hidden bg-noir-950 lg:h-[90vh] lg:flex-row">
         <HeroPanel
           href="/products?category=women"
-          image="https://images.unsplash.com/photo-1581044777550-4cfa60707c03?w=1200&q=90"
+          image={cloudinaryImage('not-just-dark/products/berlin-crop-tee-white/01')}
           alt="Women's Collection"
           eyebrow="Not Just Dark"
           titleItalic="For"
@@ -190,7 +277,7 @@ export default function HomePage() {
 
         <HeroPanel
           href="/products?category=men"
-          image="https://images.unsplash.com/photo-1617137968427-85924c800a22?w=1200&q=90"
+          image={cloudinaryImage('not-just-dark/products/london-tee-black/01')}
           alt="Men's Collection"
           eyebrow="Not Just Dark"
           titleItalic="For"
@@ -200,17 +287,6 @@ export default function HomePage() {
           loaded={heroLoaded}
           delay={400}
         />
-
-        {/* Scroll Indicator */}
-        <div
-          className={`absolute bottom-8 left-1/2 -translate-x-1/2 hidden lg:flex flex-col items-center gap-3 text-white/60 transition-all duration-1000 ${
-            heroLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-          }`}
-          style={{ transitionDelay: '1200ms' }}
-        >
-          <span className="text-[9px] tracking-[0.4em] uppercase">Scroll</span>
-          <ArrowDown size={14} strokeWidth={1.5} className="animate-bounce-soft" />
-        </div>
       </section>
 
       {/* Editorial Marquee */}
@@ -328,20 +404,14 @@ export default function HomePage() {
           </Reveal>
 
           {/* Categories Grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-noir-950/10 border border-noir-950/10">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-px bg-noir-950/10 border border-noir-950/10">
             {(categories.length > 0
-              ? categories.map((c) => ({
-                  key: c.id,
-                  href: `/products?category=${c.slug}`,
-                  name: c.name,
-                  image: c.image_url,
-                }))
-              : ['Women', 'Men', 'Accessories', 'New Arrivals'].map((name, i) => ({
-                  key: `placeholder-${i}`,
-                  href: `/products?category=${name.toLowerCase().replace(' ', '-')}`,
-                  name,
-                  image: null as string | null,
-                }))
+              ? categoryCards
+              : [
+                  { key: 'women', href: '/products?category=women', name: 'Women', image: null },
+                  { key: 'men', href: '/products?category=men', name: 'Men', image: null },
+                  { key: 'new-arrivals', href: '/products?is_featured=true', name: 'New Arrivals', image: null },
+                ]
             ).map((category, index) => (
               <Reveal key={category.key} delay={index * 100} className="bg-white">
                 <Link
@@ -353,6 +423,7 @@ export default function HomePage() {
                       src={category.image}
                       alt={category.name}
                       fill
+                      sizes="(max-width: 639px) 100vw, 33vw"
                       className="object-cover transition-transform duration-[1.4s] ease-luxury group-hover:scale-[1.06]"
                     />
                   ) : (

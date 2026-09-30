@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { Eye, ChevronDown } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
+import { Copy, Eye, ChevronDown, Truck } from 'lucide-react'
+import toast from 'react-hot-toast'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ordersApi } from '@/lib/api'
@@ -18,14 +19,34 @@ const statusOptions = [
   { value: 'cancelled', label: 'Cancelled' },
 ]
 
+const shipmentStatusOptions = [
+  ['order_confirmed', 'Order confirmed'],
+  ['processing', 'Processing'],
+  ['ready_to_ship', 'Ready to ship'],
+  ['picked_up', 'Picked up'],
+  ['in_transit', 'In transit'],
+  ['out_for_delivery', 'Out for delivery'],
+  ['delivered', 'Delivered'],
+  ['delivery_delayed', 'Delivery delayed'],
+  ['ndr', 'Delivery issue / NDR'],
+  ['rto_in_transit', 'RTO in transit'],
+  ['rto_delivered', 'RTO delivered'],
+  ['cancelled', 'Cancelled'],
+]
+
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+  const [shipmentDraft, setShipmentDraft] = useState({
+    provider: 'shiprocket', awb_code: '', courier_name: '', status: 'order_confirmed',
+    tracking_url: '', estimated_delivery: '', event_title: '', event_description: '', event_location: '',
+  })
+  const [savingShipment, setSavingShipment] = useState(false)
 
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     setIsLoading(true)
     try {
       const response = await ordersApi.listAll({
@@ -38,11 +59,11 @@ export default function AdminOrdersPage() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [currentPage, statusFilter])
 
   useEffect(() => {
     fetchOrders()
-  }, [currentPage, statusFilter])
+  }, [fetchOrders])
 
   const handleStatusUpdate = async (orderId: string, newStatus: string) => {
     try {
@@ -50,6 +71,41 @@ export default function AdminOrdersPage() {
       fetchOrders()
     } catch (error) {
       console.error('Error updating order status:', error)
+    }
+  }
+
+  const openOrder = (order: Order) => {
+    setSelectedOrder(order)
+    setShipmentDraft({
+      provider: order.shipment?.provider || 'shiprocket',
+      awb_code: order.shipment?.awb_code || '',
+      courier_name: order.shipment?.courier_name || '',
+      status: order.shipment?.status || 'order_confirmed',
+      tracking_url: order.shipment?.tracking_url || '',
+      estimated_delivery: order.shipment?.estimated_delivery?.slice(0, 10) || '',
+      event_title: '', event_description: '', event_location: '',
+    })
+  }
+
+  const saveShipment = async () => {
+    if (!selectedOrder) return
+    setSavingShipment(true)
+    try {
+      const response = await ordersApi.updateShipment(selectedOrder.id, {
+        ...shipmentDraft,
+        estimated_delivery: shipmentDraft.estimated_delivery || undefined,
+        event_title: shipmentDraft.event_title || undefined,
+        event_description: shipmentDraft.event_description || undefined,
+        event_location: shipmentDraft.event_location || undefined,
+      })
+      setSelectedOrder(response.data)
+      setShipmentDraft((current) => ({ ...current, event_title: '', event_description: '', event_location: '' }))
+      toast.success('Shipment tracking updated')
+      fetchOrders()
+    } catch (error: any) {
+      toast.error(error.response?.data?.detail || 'Could not update shipment')
+    } finally {
+      setSavingShipment(false)
     }
   }
 
@@ -148,7 +204,7 @@ export default function AdminOrdersPage() {
                       {new Date(order.created_at).toLocaleDateString()}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <Button size="sm" variant="ghost" onClick={() => setSelectedOrder(order)}>
+                      <Button size="sm" variant="ghost" onClick={() => openOrder(order)}>
                         <Eye size={16} />
                       </Button>
                     </td>
@@ -222,6 +278,78 @@ export default function AdminOrdersPage() {
                 <p>Shipping: {formatPrice(selectedOrder.shipping_cost)}</p>
                 <p className="text-lg font-medium">Total: {formatPrice(selectedOrder.total)}</p>
               </div>
+
+              <section className="mt-8 border-t border-accent-100 pt-6">
+                <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <Truck size={18} />
+                    <h3 className="font-sans text-sm font-semibold uppercase tracking-wider">Shipment tracking</h3>
+                  </div>
+                  {selectedOrder.shipment && (
+                    <button
+                      className="inline-flex items-center gap-2 text-xs font-medium text-accent-600 hover:text-accent-900"
+                      onClick={() => {
+                        const url = `${window.location.origin}/track/${selectedOrder.shipment!.tracking_token}`
+                        navigator.clipboard.writeText(url)
+                        toast.success('Customer tracking link copied')
+                      }}
+                    >
+                      <Copy size={13} /> Copy customer link
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <label className="text-xs font-medium text-accent-600">Provider
+                    <select className="mt-1.5 w-full border border-accent-200 bg-white px-3 py-2.5 text-sm" value={shipmentDraft.provider} onChange={(e) => setShipmentDraft({ ...shipmentDraft, provider: e.target.value })}>
+                      <option value="shiprocket">Shiprocket</option>
+                      <option value="delhivery">Delhivery</option>
+                      <option value="manual">Manual</option>
+                    </select>
+                  </label>
+                  <label className="text-xs font-medium text-accent-600">Shipment status
+                    <select className="mt-1.5 w-full border border-accent-200 bg-white px-3 py-2.5 text-sm" value={shipmentDraft.status} onChange={(e) => setShipmentDraft({ ...shipmentDraft, status: e.target.value })}>
+                      {shipmentStatusOptions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                    </select>
+                  </label>
+                  <label className="text-xs font-medium text-accent-600">AWB / tracking number
+                    <input className="mt-1.5 w-full border border-accent-200 px-3 py-2.5 text-sm" value={shipmentDraft.awb_code} onChange={(e) => setShipmentDraft({ ...shipmentDraft, awb_code: e.target.value })} placeholder="Assigned after pickup booking" />
+                  </label>
+                  <label className="text-xs font-medium text-accent-600">Courier
+                    <input className="mt-1.5 w-full border border-accent-200 px-3 py-2.5 text-sm" value={shipmentDraft.courier_name} onChange={(e) => setShipmentDraft({ ...shipmentDraft, courier_name: e.target.value })} placeholder="e.g. Delhivery Surface" />
+                  </label>
+                  <label className="text-xs font-medium text-accent-600">Estimated delivery
+                    <input type="date" className="mt-1.5 w-full border border-accent-200 px-3 py-2.5 text-sm" value={shipmentDraft.estimated_delivery} onChange={(e) => setShipmentDraft({ ...shipmentDraft, estimated_delivery: e.target.value })} />
+                  </label>
+                  <label className="text-xs font-medium text-accent-600">Courier tracking URL
+                    <input type="url" className="mt-1.5 w-full border border-accent-200 px-3 py-2.5 text-sm" value={shipmentDraft.tracking_url} onChange={(e) => setShipmentDraft({ ...shipmentDraft, tracking_url: e.target.value })} placeholder="https://…" />
+                  </label>
+                </div>
+
+                <div className="mt-6 border-l-2 border-accent-900 bg-accent-50 p-4">
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-accent-700">Add timeline update</p>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <input className="border border-accent-200 px-3 py-2.5 text-sm" value={shipmentDraft.event_title} onChange={(e) => setShipmentDraft({ ...shipmentDraft, event_title: e.target.value })} placeholder="e.g. Package reached Delhi hub" />
+                    <input className="border border-accent-200 px-3 py-2.5 text-sm" value={shipmentDraft.event_location} onChange={(e) => setShipmentDraft({ ...shipmentDraft, event_location: e.target.value })} placeholder="Location (optional)" />
+                    <textarea className="border border-accent-200 px-3 py-2.5 text-sm sm:col-span-2" rows={2} value={shipmentDraft.event_description} onChange={(e) => setShipmentDraft({ ...shipmentDraft, event_description: e.target.value })} placeholder="Customer-facing detail (optional)" />
+                  </div>
+                </div>
+
+                <div className="mt-5 flex justify-end">
+                  <Button onClick={saveShipment} disabled={savingShipment}>{savingShipment ? 'Saving…' : 'Save tracking update'}</Button>
+                </div>
+
+                {selectedOrder.shipment?.events?.length ? (
+                  <div className="mt-6 space-y-3 border-t border-accent-100 pt-5">
+                    {selectedOrder.shipment.events.slice(0, 4).map((event) => (
+                      <div key={event.id} className="flex gap-3 text-sm">
+                        <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-accent-800" />
+                        <div className="flex-1"><p className="font-medium">{event.title}</p><p className="text-xs text-accent-500">{new Date(event.occurred_at).toLocaleString()}{event.location ? ` · ${event.location}` : ''}</p></div>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+              </section>
             </div>
           </div>
         </div>

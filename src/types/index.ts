@@ -107,6 +107,29 @@ export interface OrderItem {
   attributes: Record<string, any>
 }
 
+export interface TrackingEvent {
+  id: string
+  status: string
+  title: string
+  description?: string
+  location?: string
+  occurred_at: string
+}
+
+export interface Shipment {
+  id: string
+  tracking_token: string
+  provider: string
+  provider_shipment_id?: string
+  awb_code?: string
+  courier_name?: string
+  status: string
+  tracking_url?: string
+  estimated_delivery?: string
+  last_synced_at?: string
+  events: TrackingEvent[]
+}
+
 export interface Order {
   id: string
   order_number: string
@@ -120,8 +143,17 @@ export interface Order {
   billing_address?: Record<string, any>
   customer_notes?: string
   items: OrderItem[]
+  shipment?: Shipment
   created_at: string
   updated_at: string
+}
+
+export interface PublicTracking {
+  order_number: string
+  order_status: string
+  destination_city?: string
+  item_count: number
+  shipment: Shipment
 }
 
 export interface Review {
@@ -162,5 +194,11 @@ export interface DashboardStats {
   }
   reviews: {
     pending: number
+  }
+  early_access: {
+    views: number
+    leads: number
+    entries: number
+    instagram_handle: string
   }
 }

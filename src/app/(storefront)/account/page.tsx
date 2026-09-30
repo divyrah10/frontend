@@ -43,7 +43,7 @@ export default function AccountPage() {
       }
     }
     fetchData()
-  }, [isAuthenticated, user])
+  }, [isAuthenticated, router, user])
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault()

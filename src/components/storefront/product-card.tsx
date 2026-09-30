@@ -24,10 +24,15 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
   const { isAuthenticated } = useAuthStore()
 
   const inWishlist = isInWishlist(product.id)
+  const requiresSize = Array.isArray(product.attributes?.sizes) && product.attributes.sizes.length > 0
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
+    if (requiresSize) {
+      window.location.href = `/products/${product.slug}`
+      return
+    }
     setIsAddingToCart(true)
     await addToCart(product.id)
     setTimeout(() => setIsAddingToCart(false), 600)
@@ -137,7 +142,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
                 ) : (
                   <>
                     <Plus size={13} strokeWidth={1.5} />
-                    <span>Add to Bag</span>
+                    <span>{requiresSize ? 'Select Size' : 'Add to Bag'}</span>
                   </>
                 )}
               </button>

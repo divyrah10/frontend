@@ -9,7 +9,6 @@ const shopLinks = [
   { href: '/products?is_featured=true', label: 'New Arrivals' },
   { href: '/products?category=women', label: 'Women' },
   { href: '/products?category=men', label: 'Men' },
-  { href: '/products?category=accessories', label: 'Accessories' },
   { href: '/products', label: 'All Products' },
 ]
 
@@ -29,7 +28,7 @@ const companyLinks = [
 ]
 
 const socialLinks = [
-  { href: 'https://instagram.com', icon: Instagram, label: 'Instagram' },
+  { href: 'https://www.instagram.com/notjustdark/', icon: Instagram, label: 'Instagram' },
   { href: 'https://twitter.com', icon: Twitter, label: 'Twitter' },
   { href: 'https://facebook.com', icon: Facebook, label: 'Facebook' },
   { href: 'https://linkedin.com', icon: Linkedin, label: 'LinkedIn' },
@@ -101,11 +100,11 @@ export function Footer() {
           <div className="col-span-2 md:col-span-3 lg:col-span-2">
             <Link href="/" className="inline-block mb-6">
               <Image
-                src="/wordmark-white.png"
+                src="/logo-white.png"
                 alt="NOT JUST DARK"
-                width={170}
-                height={70}
-                className="object-contain opacity-90"
+                width={104}
+                height={65}
+                className="h-auto w-[104px] object-contain opacity-90"
               />
             </Link>
             <p className="text-cream-400 text-sm leading-relaxed mb-6 max-w-xs">

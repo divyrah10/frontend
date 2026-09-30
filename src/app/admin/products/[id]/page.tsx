@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -64,10 +64,6 @@ export default function EditProductPage() {
   const [newImages, setNewImages] = useState<File[]>([])
   const [newImagePreviews, setNewImagePreviews] = useState<string[]>([])
 
-  useEffect(() => {
-    fetchData()
-  }, [productId])
-
   // Auto-calculate discount percentage when prices change
   useEffect(() => {
     if (formData.is_on_sale && formData.price && formData.compare_at_price) {
@@ -80,7 +76,7 @@ export default function EditProductPage() {
     }
   }, [formData.price, formData.compare_at_price, formData.is_on_sale])
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const [productRes, categoriesRes] = await Promise.all([
         productsApi.getById(productId),
@@ -118,7 +114,11 @@ export default function EditProductPage() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [productId])
+
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
 
   const handleNewImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])

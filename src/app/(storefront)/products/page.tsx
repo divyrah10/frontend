@@ -48,7 +48,7 @@ function ProductsContent() {
     const fetchCategories = async () => {
       try {
         const response = await categoriesApi.list()
-        setCategories(response.data)
+        setCategories(response.data.filter((category: Category) => category.slug !== 'accessories'))
       } catch (error) {
         console.error('Error fetching categories:', error)
       }

@@ -15,7 +15,7 @@ export default function CartPage() {
 
   useEffect(() => {
     fetchCart()
-  }, [])
+  }, [fetchCart])
 
   const handleQuantityChange = async (itemId: string, newQuantity: number) => {
     if (newQuantity < 1) {
@@ -66,6 +66,7 @@ export default function CartPage() {
                       src={item.product_image}
                       alt={item.product_name}
                       fill
+                      sizes="96px"
                       className="object-cover"
                     />
                   ) : (

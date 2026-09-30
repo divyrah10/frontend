@@ -13,9 +13,7 @@ const navLinks = [
   { href: '/products', label: 'All Products' },
   { href: '/products?category=women', label: 'Women' },
   { href: '/products?category=men', label: 'Men' },
-  { href: '/products?category=accessories', label: 'Accessories' },
   { href: '/products?is_featured=true', label: 'New Arrivals', highlight: true },
-  { href: '/compare', label: 'Compare' },
 ]
 
 export function Header() {
@@ -27,16 +25,24 @@ export function Header() {
   const searchInputRef = useRef<HTMLInputElement>(null)
   const userMenuRef = useRef<HTMLDivElement>(null)
 
-  const { user, isAuthenticated, logout } = useAuthStore()
+  const { user, isAuthenticated, logout, checkAuth } = useAuthStore()
   const { cart, fetchCart } = useCartStore()
   const { items: wishlistItems, fetchWishlist } = useWishlistStore()
 
   useEffect(() => {
-    fetchCart()
-    if (isAuthenticated) {
-      fetchWishlist()
+    const initializeHeader = async () => {
+      fetchCart()
+
+      if (isAuthenticated) {
+        const authenticated = await checkAuth()
+        if (authenticated) {
+          fetchWishlist()
+        }
+      }
     }
-  }, [isAuthenticated])
+
+    initializeHeader()
+  }, [checkAuth, fetchCart, fetchWishlist, isAuthenticated])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -75,17 +81,6 @@ export function Header() {
         ? 'bg-white/95 backdrop-blur-xl border-noir-950/10'
         : 'bg-white/90 backdrop-blur-sm border-transparent'
     }`}>
-      {/* Announcement Bar */}
-      <div className={`bg-noir-950 text-white overflow-hidden transition-all duration-500 ${
-        isScrolled ? 'h-0 opacity-0' : 'h-9 opacity-100'
-      }`}>
-        <div className="container mx-auto px-4 h-full flex items-center justify-center">
-          <p className="text-[10px] tracking-[0.35em] uppercase font-light">
-            Complimentary shipping on all orders over ₹5,000
-          </p>
-        </div>
-      </div>
-
       {/* Main Header */}
       <div className={`container mx-auto px-4 transition-all duration-500 ${
         isScrolled ? 'py-3' : 'py-4 lg:py-5'
@@ -105,13 +100,13 @@ export function Header() {
             </button>
 
             {/* Logo */}
-            <Link href="/" className="relative group flex-shrink-0">
+            <Link href="/" className="relative group flex w-16 flex-shrink-0 items-center lg:w-[132px]">
               <Image
-                src="/wordmark-black.png"
+                src="/logo-black.png"
                 alt="NOT JUST DARK"
-                width={132}
-                height={55}
-                className="object-contain transition-all duration-500"
+                width={64}
+                height={40}
+                className="h-auto w-14 object-contain transition-transform duration-500 group-hover:scale-105 lg:w-16"
                 priority
               />
             </Link>
@@ -305,7 +300,7 @@ export function Header() {
             {/* Quick suggestions */}
             <div className="flex items-center gap-4 mt-4 overflow-x-auto pb-2 scrollbar-hide">
               <span className="text-[10px] tracking-[0.25em] uppercase text-noir-400 whitespace-nowrap">Popular</span>
-              {['Dresses', 'Blazers', 'Accessories', 'New In'].map((term) => (
+              {['Dresses', 'Blazers', 'Eveningwear', 'New In'].map((term) => (
                 <button
                   key={term}
                   type="button"
@@ -340,11 +335,11 @@ export function Header() {
           <div className="flex items-center justify-between p-6 border-b border-noir-100">
             <Link href="/" onClick={() => setIsMenuOpen(false)}>
               <Image
-                src="/wordmark-black.png"
+                src="/logo-black.png"
                 alt="NOT JUST DARK"
-                width={120}
-                height={50}
-                className="object-contain"
+                width={72}
+                height={45}
+                className="h-auto w-[72px] object-contain"
               />
             </Link>
             <button
