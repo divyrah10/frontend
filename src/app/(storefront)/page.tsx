@@ -157,7 +157,8 @@ export default function HomePage() {
 
   const categoryCards = [
     ...categories
-      .filter((category) => category.slug !== 'accessories')
+      // Top-level only: subcategories like men-polos share sort orders with their parents.
+      .filter((category) => !category.parent_id && category.slug !== 'accessories')
       .slice(0, 2)
       .map((category) => ({
       key: category.id,
@@ -181,7 +182,7 @@ export default function HomePage() {
           categoriesApi.list(),
         ])
         setFeaturedProducts(productsRes.data)
-        setCategories(categoriesRes.data.slice(0, 4))
+        setCategories(categoriesRes.data)
       } catch (error) {
         console.error('Error fetching data:', error)
       } finally {
