@@ -368,7 +368,7 @@ export default function CheckoutPage() {
                 <span>{formatPrice(cart.subtotal)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-accent-600">Tax (18% GST)</span>
+                <span className="text-accent-600">GST (5%, included)</span>
                 <span>{formatPrice(cart.tax)}</span>
               </div>
               <div className="flex justify-between">
@@ -439,7 +439,7 @@ export default function CheckoutPage() {
                   </div>
                   <div className="mt-5 space-y-2 text-sm text-white/65">
                     <div className="flex justify-between"><span>{cart.items.length} item{cart.items.length === 1 ? '' : 's'}</span><span>{formatPrice(cart.subtotal)}</span></div>
-                    <div className="flex justify-between"><span>GST</span><span>{formatPrice(cart.tax)}</span></div>
+                    <div className="flex justify-between"><span>GST (5%, included)</span><span>{formatPrice(cart.tax)}</span></div>
                     <div className="flex justify-between"><span>Shipping</span><span>Included</span></div>
                   </div>
                 </div>

@@ -109,6 +109,23 @@ export default function AdminOrdersPage() {
     }
   }
 
+  const runShiprocket = async (action: 'push' | 'refresh') => {
+    if (!selectedOrder) return
+    setSavingShipment(true)
+    try {
+      const response = action === 'push'
+        ? await ordersApi.pushToShiprocket(selectedOrder.id)
+        : await ordersApi.refreshTracking(selectedOrder.id)
+      openOrder(response.data)
+      toast.success(action === 'push' ? 'Order sent to Shiprocket' : 'Tracking refreshed')
+      fetchOrders()
+    } catch (error: any) {
+      toast.error(error.response?.data?.detail || 'Shiprocket request failed')
+    } finally {
+      setSavingShipment(false)
+    }
+  }
+
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
       case 'delivered':
@@ -274,7 +291,7 @@ export default function AdminOrdersPage() {
 
               <div className="text-right space-y-1 text-sm">
                 <p>Subtotal: {formatPrice(selectedOrder.subtotal)}</p>
-                <p>Tax: {formatPrice(selectedOrder.tax)}</p>
+                <p>GST: {formatPrice(selectedOrder.tax)}</p>
                 <p>Shipping: {formatPrice(selectedOrder.shipping_cost)}</p>
                 <p className="text-lg font-medium">Total: {formatPrice(selectedOrder.total)}</p>
               </div>
@@ -335,7 +352,14 @@ export default function AdminOrdersPage() {
                   </div>
                 </div>
 
-                <div className="mt-5 flex justify-end">
+                <div className="mt-5 flex flex-wrap justify-end gap-3">
+                  {selectedOrder.shipment?.awb_code ? (
+                    <Button variant="outline" onClick={() => runShiprocket('refresh')} disabled={savingShipment}>Refresh from Shiprocket</Button>
+                  ) : (
+                    <Button variant="outline" onClick={() => runShiprocket('push')} disabled={savingShipment}>
+                      {selectedOrder.shipment?.provider_shipment_id ? 'Retry Shiprocket' : 'Send to Shiprocket'}
+                    </Button>
+                  )}
                   <Button onClick={saveShipment} disabled={savingShipment}>{savingShipment ? 'Saving…' : 'Save tracking update'}</Button>
                 </div>
 

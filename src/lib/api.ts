@@ -199,6 +199,8 @@ export const ordersApi = {
     event_description?: string
     event_location?: string
   }) => api.put(`/orders/admin/${id}/shipment`, data),
+  pushToShiprocket: (id: string) => api.post(`/orders/admin/${id}/shipment/shiprocket`),
+  refreshTracking: (id: string) => api.post(`/orders/admin/${id}/shipment/refresh`),
 }
 
 // Addresses API

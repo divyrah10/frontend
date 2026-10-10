@@ -148,7 +148,7 @@ export default function CartPage() {
                 <span>{formatPrice(cart.subtotal)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-accent-600">Estimated Tax (18% GST)</span>
+                <span className="text-accent-600">GST (5%, included)</span>
                 <span>{formatPrice(cart.tax)}</span>
               </div>
               <div className="flex justify-between">
@@ -169,7 +169,7 @@ export default function CartPage() {
             </Button>
 
             <p className="text-xs text-accent-500 text-center mt-4">
-              Taxes and shipping calculated at checkout
+              Prices include GST
             </p>
           </div>
         </div>
