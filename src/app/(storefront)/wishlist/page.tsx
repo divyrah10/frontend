@@ -7,13 +7,14 @@ import { Heart, ShoppingBag, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useWishlistStore } from '@/stores/wishlist'
 import { useCartStore } from '@/stores/cart'
-import { useAuthStore } from '@/stores/auth'
+import { useAuthHydrated, useAuthStore } from '@/stores/auth'
 import { formatPrice } from '@/lib/utils'
 
 export default function WishlistPage() {
   const { items, fetchWishlist, removeFromWishlist, isLoading } = useWishlistStore()
   const { addToCart } = useCartStore()
   const { isAuthenticated } = useAuthStore()
+  const authHydrated = useAuthHydrated()
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -24,6 +25,10 @@ export default function WishlistPage() {
   const handleAddToCart = async (productId: string) => {
     await addToCart(productId)
     await removeFromWishlist(productId)
+  }
+
+  if (!authHydrated) {
+    return <div className="container mx-auto px-4 py-16 text-center"><div className="spinner mx-auto" /></div>
   }
 
   if (!isAuthenticated) {

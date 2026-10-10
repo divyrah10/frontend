@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { Package, Heart, MapPin, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { useAuthStore } from '@/stores/auth'
+import { useAuthHydrated, useAuthStore } from '@/stores/auth'
 import { usersApi, ordersApi } from '@/lib/api'
 import { Order } from '@/types'
 import { formatPrice } from '@/lib/utils'
@@ -14,6 +14,7 @@ import { formatPrice } from '@/lib/utils'
 export default function AccountPage() {
   const router = useRouter()
   const { user, isAuthenticated, fetchUser, logout } = useAuthStore()
+  const authHydrated = useAuthHydrated()
   const [orders, setOrders] = useState<Order[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isEditing, setIsEditing] = useState(false)
@@ -23,6 +24,7 @@ export default function AccountPage() {
   })
 
   useEffect(() => {
+    if (!authHydrated) return
     if (!isAuthenticated) {
       router.push('/login?redirect=/account')
       return
@@ -43,7 +45,7 @@ export default function AccountPage() {
       }
     }
     fetchData()
-  }, [isAuthenticated, router, user])
+  }, [authHydrated, isAuthenticated, router, user])
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault()

@@ -78,7 +78,10 @@ body {
 }
 
 .page-enter {
-  animation: pageEnter 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  /* backwards, not both: a transform left on this wrapper makes it the containing
+     block for every position:fixed descendant (modals, mobile menu), pinning them
+     to the page instead of the viewport. */
+  animation: pageEnter 520ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
 }
 
 @layer base {

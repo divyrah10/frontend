@@ -7,7 +7,7 @@ import { ArrowRight, Check, LockKeyhole, ShieldCheck, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useCartStore } from '@/stores/cart'
-import { useAuthStore } from '@/stores/auth'
+import { useAuthHydrated, useAuthStore } from '@/stores/auth'
 import { addressesApi, ordersApi, paymentsApi } from '@/lib/api'
 import { Address } from '@/types'
 import { formatPrice } from '@/lib/utils'
@@ -23,6 +23,7 @@ export default function CheckoutPage() {
   const router = useRouter()
   const { cart, fetchCart, clearCart } = useCartStore()
   const { isAuthenticated, user } = useAuthStore()
+  const authHydrated = useAuthHydrated()
 
   const [addresses, setAddresses] = useState<Address[]>([])
   const [selectedAddressId, setSelectedAddressId] = useState<string>('')
@@ -47,6 +48,7 @@ export default function CheckoutPage() {
   })
 
   useEffect(() => {
+    if (!authHydrated) return
     if (!isAuthenticated) {
       router.push('/login?redirect=/checkout')
       return
@@ -80,7 +82,7 @@ export default function CheckoutPage() {
     return () => {
       document.body.removeChild(script)
     }
-  }, [fetchCart, isAuthenticated, router])
+  }, [authHydrated, fetchCart, isAuthenticated, router])
 
   useEffect(() => {
     if (!showPaymentConsent) return

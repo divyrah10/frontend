@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { User } from '@/types'
@@ -95,3 +96,18 @@ export const useAuthStore = create<AuthState>()(
     }
   )
 )
+
+/**
+ * True once the saved sign-in state has loaded from localStorage. Until then
+ * isAuthenticated reads false even for signed-in users, so guards that redirect
+ * to /login must wait for this or they bounce everyone on a full page load.
+ */
+export function useAuthHydrated() {
+  const [hydrated, setHydrated] = useState(false)
+  useEffect(() => {
+    const unsubscribe = useAuthStore.persist.onFinishHydration(() => setHydrated(true))
+    setHydrated(useAuthStore.persist.hasHydrated())
+    return unsubscribe
+  }, [])
+  return hydrated
+}
