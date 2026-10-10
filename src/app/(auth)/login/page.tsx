@@ -4,7 +4,7 @@ import { Suspense, useState } from 'react'
 import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Input, PasswordInput } from '@/components/ui/input'
 import { useAuthStore } from '@/stores/auth'
 
 function LoginForm() {
@@ -60,9 +60,8 @@ function LoginForm() {
 
             <div>
               <label htmlFor="login-password" className="block text-sm font-medium mb-1">Password</label>
-              <Input
+              <PasswordInput
                 id="login-password"
-                type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required

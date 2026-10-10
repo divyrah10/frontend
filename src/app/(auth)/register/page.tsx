@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Input, PasswordInput } from '@/components/ui/input'
 import { useAuthStore } from '@/stores/auth'
 
 export default function RegisterPage() {
@@ -108,9 +108,8 @@ export default function RegisterPage() {
 
             <div>
               <label htmlFor="register-password" className="block text-sm font-medium mb-1">Password</label>
-              <Input
+              <PasswordInput
                 id="register-password"
-                type="password"
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
@@ -121,9 +120,8 @@ export default function RegisterPage() {
 
             <div>
               <label htmlFor="register-confirm-password" className="block text-sm font-medium mb-1">Confirm Password</label>
-              <Input
+              <PasswordInput
                 id="register-confirm-password"
-                type="password"
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}

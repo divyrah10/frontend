@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Input, PasswordInput } from '@/components/ui/input'
 import { adminApi } from '@/lib/api'
 import { useAuthStore } from '@/stores/auth'
 import { Shield, CheckCircle, AlertCircle } from 'lucide-react'
@@ -56,8 +56,8 @@ export default function AdminSetupPage() {
       return
     }
 
-    if (formData.password.length < 8) {
-      setError('Password must be at least 8 characters')
+    if (formData.password.length < 12) {
+      setError('Password must be at least 12 characters')
       return
     }
 
@@ -178,19 +178,17 @@ export default function AdminSetupPage() {
 
             <div>
               <label className="block text-sm font-medium mb-1">Password</label>
-              <Input
-                type="password"
+              <PasswordInput
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required
-                placeholder="Min 8 characters"
+                placeholder="Min 12 characters"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium mb-1">Confirm Password</label>
-              <Input
-                type="password"
+              <PasswordInput
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                 required
@@ -200,8 +198,7 @@ export default function AdminSetupPage() {
 
             <div>
               <label className="block text-sm font-medium mb-1">Setup Key</label>
-              <Input
-                type="password"
+              <PasswordInput
                 value={formData.setup_key}
                 onChange={(e) => setFormData({ ...formData, setup_key: e.target.value })}
                 required

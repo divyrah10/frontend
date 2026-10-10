@@ -1,11 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Input, PasswordInput } from '@/components/ui/input'
 import { adminApi } from '@/lib/api'
 import toast from 'react-hot-toast'
 import { useAuthStore } from '@/stores/auth'
@@ -15,6 +15,11 @@ export default function AdminLoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [needsSetup, setNeedsSetup] = useState(false)
+
+  useEffect(() => {
+    adminApi.checkSetup().then((r) => setNeedsSetup(r.data.needs_setup)).catch(() => {})
+  }, [])
   const [isLoading, setIsLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -89,9 +94,8 @@ export default function AdminLoginPage() {
 
             <div>
               <label htmlFor="admin-password" className="block text-sm font-medium mb-1">Password</label>
-              <Input
+              <PasswordInput
                 id="admin-password"
-                type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -105,6 +109,11 @@ export default function AdminLoginPage() {
           </form>
 
           <div className="mt-6 text-center space-y-2">
+            {needsSetup && (
+              <Link href="/admin/setup" className="block text-sm font-medium text-accent-900 underline">
+                No admin account yet? Set one up
+              </Link>
+            )}
             <Link href="/" className="block text-sm text-accent-500 hover:text-accent-700">
               Back to Store
             </Link>

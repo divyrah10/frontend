@@ -6,7 +6,7 @@ import toast from 'react-hot-toast'
 import { adminApi } from '@/lib/api'
 import { useAuthStore } from '@/stores/auth'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Input, PasswordInput } from '@/components/ui/input'
 
 interface AdminUser {
   id: string
@@ -137,11 +137,11 @@ export default function SettingsPage() {
         <section className="bg-white border border-accent-100 p-7">
           <h2 className="text-2xl mb-6">Change my password</h2>
           <form onSubmit={changePassword} className="space-y-3">
-            <Input type="password" autoComplete="current-password" placeholder="Current password" required
+            <PasswordInput autoComplete="current-password" placeholder="Current password" required
               value={passwords.current} onChange={(e) => setPasswords({ ...passwords, current: e.target.value })} />
-            <Input type="password" autoComplete="new-password" placeholder="New password (12+ characters)" minLength={12} required
+            <PasswordInput autoComplete="new-password" placeholder="New password (12+ characters)" minLength={12} required
               value={passwords.next} onChange={(e) => setPasswords({ ...passwords, next: e.target.value })} />
-            <Input type="password" autoComplete="new-password" placeholder="Confirm new password" minLength={12} required
+            <PasswordInput autoComplete="new-password" placeholder="Confirm new password" minLength={12} required
               value={passwords.confirm} onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })} />
             <Button disabled={savingPassword}>{savingPassword ? 'Saving…' : 'Change password'}</Button>
           </form>

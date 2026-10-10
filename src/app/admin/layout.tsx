@@ -38,7 +38,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
+  // Setup creates the first admin, so it must be reachable before anyone can sign in.
+  const isSetup = pathname === '/admin/setup'
+
   useEffect(() => {
+    if (isSetup) return
     const verify = async () => {
       const authenticated = await checkAuth()
       if (!authenticated) {
@@ -57,7 +61,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       setIsLoading(false)
     }
     verify()
-  }, [checkAuth, router])
+  }, [checkAuth, router, isSetup])
+
+  if (isSetup) return <>{children}</>
 
   if (isLoading) {
     return (
