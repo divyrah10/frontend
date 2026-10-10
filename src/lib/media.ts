@@ -4,6 +4,7 @@ export function cloudinaryImage(publicId: string) {
   return `https://res.cloudinary.com/${cloudName}/image/upload/f_auto,q_auto/${publicId}`
 }
 
-export const heroVideoUrl =
-  process.env.NEXT_PUBLIC_HERO_VIDEO_URL ||
-  `https://res.cloudinary.com/${cloudName}/video/upload/f_auto,q_auto/not-just-dark/videos/njd-campaign-film.mp4`
+export const heroVideoUrls = {
+  landscape: process.env.NEXT_PUBLIC_HERO_VIDEO_URL || '/videos/njd-landscape.mp4',
+  portrait: process.env.NEXT_PUBLIC_HERO_VIDEO_PORTRAIT_URL || '/videos/njd-portrait.mp4',
+}

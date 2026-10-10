@@ -8,7 +8,7 @@ import { ProductCard } from '@/components/storefront/product-card'
 import { Reveal } from '@/components/reveal'
 import { productsApi, categoriesApi } from '@/lib/api'
 import { Product, Category } from '@/types'
-import { cloudinaryImage, heroVideoUrl } from '@/lib/media'
+import { cloudinaryImage, heroVideoUrls } from '@/lib/media'
 
 const features = [
   {
@@ -152,6 +152,7 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(true)
   const [heroLoaded, setHeroLoaded] = useState(false)
   const [isHeroVideoPlaying, setIsHeroVideoPlaying] = useState(false)
+  const [heroVideoSrc, setHeroVideoSrc] = useState<string>()
   const heroVideoRef = useRef<HTMLVideoElement>(null)
 
   const categoryCards = [
@@ -191,6 +192,15 @@ export default function HomePage() {
     setHeroLoaded(true)
   }, [])
 
+  // Pick the portrait or landscape cut once the viewport is known, so only one file downloads.
+  useEffect(() => {
+    const portrait = window.matchMedia('(orientation: portrait)')
+    const update = () => setHeroVideoSrc(portrait.matches ? heroVideoUrls.portrait : heroVideoUrls.landscape)
+    update()
+    portrait.addEventListener('change', update)
+    return () => portrait.removeEventListener('change', update)
+  }, [])
+
   const toggleHeroVideo = () => {
     const video = heroVideoRef.current
     if (!video) return
@@ -209,7 +219,7 @@ export default function HomePage() {
         <video
           ref={heroVideoRef}
           className="absolute inset-0 h-full w-full object-cover"
-          src={heroVideoUrl}
+          src={heroVideoSrc}
           autoPlay
           muted
           loop

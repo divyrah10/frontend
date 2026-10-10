@@ -198,26 +198,26 @@ export function Footer() {
               <li className="flex items-start gap-3">
                 <MapPin size={15} strokeWidth={1.25} className="text-white/40 mt-0.5 flex-shrink-0" />
                 <span className="text-sm font-light text-white/50">
-                  Mumbai, Maharashtra<br />
-                  India 400001
+                  Vijayshree Nivas Building,<br />
+                  Vivekanand Nagar, Dharwad
                 </span>
               </li>
               <li className="flex items-center gap-3">
                 <Mail size={15} strokeWidth={1.25} className="text-white/40 flex-shrink-0" />
                 <a
-                  href="mailto:hello@notjustdark.com"
+                  href="mailto:notjustdark@gmail.com"
                   className="text-sm font-light text-white/50 hover:text-white transition-colors"
                 >
-                  hello@notjustdark.com
+                  notjustdark@gmail.com
                 </a>
               </li>
               <li className="flex items-center gap-3">
                 <Phone size={15} strokeWidth={1.25} className="text-white/40 flex-shrink-0" />
                 <a
-                  href="tel:+911234567890"
+                  href="tel:+918217409487"
                   className="text-sm font-light text-white/50 hover:text-white transition-colors"
                 >
-                  +91 123 456 7890
+                  +91 82174 09487
                 </a>
               </li>
             </ul>
