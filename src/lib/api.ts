@@ -296,4 +296,7 @@ export const adminApi = {
 
   activateUser: (userId: string) =>
     api.put(`/admin/users/${userId}/activate`),
+
+  changePassword: (current_password: string, new_password: string) =>
+    api.put('/admin/me/password', { current_password, new_password }),
 }
