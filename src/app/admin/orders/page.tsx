@@ -358,12 +358,11 @@ export default function AdminOrdersPage() {
                 </div>
 
                 <div className="mt-5 flex flex-wrap justify-end gap-3">
-                  {selectedOrder.shipment?.awb_code ? (
+                  {/* Once Shiprocket has the order, refresh pulls its AWB, courier and scans. */}
+                  {selectedOrder.shipment?.provider_shipment_id || selectedOrder.shipment?.awb_code ? (
                     <Button variant="outline" onClick={() => runShiprocket('refresh')} disabled={savingShipment}>Refresh from Shiprocket</Button>
                   ) : (
-                    <Button variant="outline" onClick={() => runShiprocket('push')} disabled={savingShipment}>
-                      {selectedOrder.shipment?.provider_shipment_id ? 'Retry Shiprocket' : 'Send to Shiprocket'}
-                    </Button>
+                    <Button variant="outline" onClick={() => runShiprocket('push')} disabled={savingShipment}>Send to Shiprocket</Button>
                   )}
                   <Button onClick={saveShipment} disabled={savingShipment}>{savingShipment ? 'Saving…' : 'Save tracking update'}</Button>
                 </div>
