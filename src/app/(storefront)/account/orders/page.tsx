@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { isPaidOrder } from '@/lib/orders'
 import { ArrowUpRight, CheckCircle2, ChevronDown, Package, Truck } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { ordersApi } from '@/lib/api'
@@ -90,7 +91,8 @@ export default function AccountOrdersPage() {
                       <div className="mt-6 flex justify-between items-center gap-4">
                         <p className="text-sm text-noir-500">Shipping to {order.shipping_address.city}</p>
                         <div className="flex flex-wrap justify-end gap-3">
-                          {order.shipment && (
+                          {order.status === 'pending' && <span className="text-sm text-noir-500">Awaiting payment</span>}
+                          {order.shipment && isPaidOrder(order.status) && (
                             <Link href={`/track/${order.shipment.tracking_token}`} className="inline-flex items-center gap-2 border-b border-noir-950 pb-1 text-sm font-medium">
                               Track order <ArrowUpRight size={14} />
                             </Link>

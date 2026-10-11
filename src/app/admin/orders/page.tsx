@@ -5,6 +5,7 @@ import { Copy, Eye, ChevronDown, Truck } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { isPaidOrder } from '@/lib/orders'
 import { ordersApi } from '@/lib/api'
 import { Order } from '@/types'
 import { formatPrice } from '@/lib/utils'
@@ -33,6 +34,7 @@ const shipmentStatusOptions = [
   ['rto_delivered', 'RTO delivered'],
   ['cancelled', 'Cancelled'],
 ]
+
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([])
@@ -302,7 +304,10 @@ export default function AdminOrdersPage() {
                     <Truck size={18} />
                     <h3 className="font-sans text-sm font-semibold uppercase tracking-wider">Shipment tracking</h3>
                   </div>
-                  {selectedOrder.shipment && (
+                  {selectedOrder.shipment && !isPaidOrder(selectedOrder.status) && (
+                    <span className="text-xs text-accent-500">Customer link works once the order is paid</span>
+                  )}
+                  {selectedOrder.shipment && isPaidOrder(selectedOrder.status) && (
                     <button
                       className="inline-flex items-center gap-2 text-xs font-medium text-accent-600 hover:text-accent-900"
                       onClick={() => {
