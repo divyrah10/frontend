@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { MapPin, Plus, Star, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { apiErrorMessage } from '@/lib/utils'
 import { addressesApi } from '@/lib/api'
 import { Address } from '@/types'
 import { Button } from '@/components/ui/button'
@@ -27,7 +28,7 @@ export default function AddressesPage() {
       setShowForm(false)
       await load()
       toast.success('Address saved')
-    } catch (error: any) { toast.error(error.response?.data?.detail || 'Could not save address') }
+    } catch (error: any) { toast.error(apiErrorMessage(error, 'Could not save address')) }
   }
 
   const remove = async (id: string) => {
@@ -61,7 +62,7 @@ export default function AddressesPage() {
           <form onSubmit={submit} className="mt-8 bg-noir-950 text-white p-7 lg:p-10 animate-fade-in-up">
             <h2 className="text-3xl mb-7">New destination</h2>
             <div className="grid md:grid-cols-2 gap-4">
-              {(['full_name','phone','address_line1','address_line2','city','state','postal_code','country'] as const).map(key => <Input key={key} required={!['phone','address_line2'].includes(key)} placeholder={key.replaceAll('_',' ')} value={String(form[key])} onChange={e => setForm({...form,[key]:e.target.value})} className="bg-white text-noir-950" />)}
+              {(['full_name','phone','address_line1','address_line2','city','state','postal_code','country'] as const).map(key => <Input key={key} required={key !== 'address_line2'} type={key === 'phone' ? 'tel' : 'text'} placeholder={key === 'phone' ? 'mobile number (10 digits)' : key.replaceAll('_',' ')} value={String(form[key])} onChange={e => setForm({...form,[key]:e.target.value})} className="bg-white text-noir-950" />)}
             </div>
             <div className="mt-6 flex gap-3"><Button type="submit">Save address</Button><Button type="button" variant="ghost" className="text-white" onClick={() => setShowForm(false)}>Cancel</Button></div>
           </form>

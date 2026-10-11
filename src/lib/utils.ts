@@ -28,3 +28,13 @@ export function getSessionId(): string {
   }
   return sessionId
 }
+
+/** Readable text from an API error; FastAPI validation errors arrive as a list. */
+export function apiErrorMessage(error: any, fallback: string): string {
+  const detail = error?.response?.data?.detail
+  if (typeof detail === 'string') return detail
+  if (Array.isArray(detail) && detail.length) {
+    return detail.map((d: any) => String(d?.msg ?? d).replace(/^Value error, /, '')).join('. ')
+  }
+  return fallback
+}

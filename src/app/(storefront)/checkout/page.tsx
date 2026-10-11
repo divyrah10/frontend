@@ -10,7 +10,7 @@ import { useCartStore } from '@/stores/cart'
 import { useAuthHydrated, useAuthStore } from '@/stores/auth'
 import { addressesApi, ordersApi, paymentsApi } from '@/lib/api'
 import { Address } from '@/types'
-import { formatPrice } from '@/lib/utils'
+import { formatPrice, apiErrorMessage } from '@/lib/utils'
 import toast from 'react-hot-toast'
 
 declare global {
@@ -115,7 +115,7 @@ export default function CheckoutPage() {
         country: 'India',
       })
     } catch (error) {
-      console.error('Error adding address:', error)
+      toast.error(apiErrorMessage(error, 'Could not save this address'))
     }
   }
 
@@ -294,10 +294,15 @@ export default function CheckoutPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Phone</label>
+                    <label className="block text-sm font-medium mb-1">Mobile number</label>
                     <Input
+                      type="tel"
+                      inputMode="tel"
+                      autoComplete="tel"
+                      placeholder="10-digit mobile, for the courier"
                       value={newAddress.phone}
                       onChange={(e) => setNewAddress({ ...newAddress, phone: e.target.value })}
+                      required
                     />
                   </div>
                 </div>
