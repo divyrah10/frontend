@@ -1,12 +1,13 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import { SIZE_CHARTS, SIZE_CHART_COLUMNS } from '@/lib/size-charts'
 
 const pages: Record<string, { eyebrow: string; title: string; intro: string; sections: { title: string; body: string }[] }> = {
   contact: { eyebrow: 'Client services', title: 'Let’s talk', intro: 'Our client care team is here to help with orders, sizing and product questions.', sections: [{title:'Email',body:'notjustdark@gmail.com — we aim to reply within one business day.'},{title:'Phone',body:'+91 82174 09487'},{title:'Studio',body:'NOT JUST DARK, Vijayshree Nivas Building, Vivekanand Nagar, Dharwad.'},{title:'Studio hours',body:'Monday–Saturday, 10:00–18:00 IST.'}] },
   shipping: { eyebrow: 'Delivery', title: 'Shipping information', intro: 'Every order is prepared with care and tracked from our studio to your door.', sections: [{title:'India',body:'Complimentary standard delivery on orders over ₹5,000. Most orders arrive in 3–7 business days.'},{title:'Tracking',body:'Tracking details are shared once your order leaves our studio.'}] },
   returns: { eyebrow: 'Client care', title: 'Returns & exchanges', intro: 'We want every piece to feel considered and right.', sections: [{title:'Return window',body:'Request a return within 30 days of delivery. Pieces must be unworn, unwashed and retain their original tags.'},{title:'Final sale',body:'Personalised pieces and final-sale items cannot be returned unless faulty.'}] },
   faq: { eyebrow: 'Answers', title: 'Frequently asked', intro: 'A concise guide to ordering from NOT JUST DARK.', sections: [{title:'Can I change an order?',body:'Contact us promptly. We can make changes before fulfilment begins.'},{title:'How do I care for a piece?',body:'Follow the garment care label and store pieces away from direct sunlight.'},{title:'Are payments secure?',body:'Payments are processed through Razorpay; card details are not stored by us.'}] },
-  'size-guide': { eyebrow: 'The right fit', title: 'Size guide', intro: 'Our silhouettes vary from precise tailoring to intentionally relaxed proportions.', sections: [{title:'How to measure',body:'Measure chest, waist and hip close to the body without pulling the tape tight.'},{title:'Between sizes?',body:'Choose the larger size for a relaxed fit, or contact client care for garment-specific measurements.'}] },
+  'size-guide': { eyebrow: 'The right fit', title: 'Size guide', intro: 'Our silhouettes vary from precise tailoring to intentionally relaxed proportions.', sections: [{title:'How to read the charts',body:'All measurements are in centimetres, taken from the garment laid flat. Compare them with a piece you already own and love.'},{title:'Between sizes?',body:'Choose the larger size for a relaxed fit, or contact client care for garment-specific measurements.'}] },
   sustainability: { eyebrow: 'Made with intent', title: 'Our responsibility', intro: 'We favour considered production, durable construction and pieces designed to remain in rotation.', sections: [{title:'Small runs',body:'Limited production helps us avoid excess inventory and preserve the individuality of each collection.'},{title:'Longer life',body:'Care guidance and thoughtful construction help every piece live beyond a single season.'}] },
   careers: { eyebrow: 'Join the studio', title: 'Careers', intro: 'We are building a team that sees fashion as culture, craft and clear point of view.', sections: [{title:'Open applications',body:'Send a short introduction and portfolio to careers@notjustdark.com.'}] },
   press: { eyebrow: 'Press room', title: 'Notes & features', intro: 'For editorial requests, samples and brand assets, contact our press desk.', sections: [{title:'Press enquiries',body:'press@notjustdark.com'}] },
@@ -20,5 +21,39 @@ export function generateStaticParams() { return Object.keys(pages).map(info => (
 export default function InfoPage({ params }: { params: { info: string } }) {
   const page = pages[params.info]
   if (!page) notFound()
-  return <div className="min-h-screen bg-cream-50 pt-32 pb-24"><div className="container mx-auto px-4 max-w-5xl"><p className="text-luxury-caps text-noir-400 mb-5 animate-fade-in">{page.eyebrow}</p><h1 className="font-display text-6xl lg:text-8xl max-w-4xl animate-fade-in-up">{page.title}</h1><p className="mt-10 text-xl lg:text-2xl font-light leading-relaxed max-w-3xl text-noir-600">{page.intro}</p><div className="mt-20 grid md:grid-cols-2 gap-x-16 gap-y-12 border-t border-noir-950/15 pt-10">{page.sections.map(section => <section key={section.title}><p className="text-luxury-caps text-noir-400 mb-4">{section.title}</p><p className="text-noir-600">{section.body}</p></section>)}</div><Link href="/" className="link-editorial inline-block mt-20 text-sm">Return home</Link></div></div>
+  return <div className="min-h-screen bg-cream-50 pt-32 pb-24"><div className="container mx-auto px-4 max-w-5xl"><p className="text-luxury-caps text-noir-400 mb-5 animate-fade-in">{page.eyebrow}</p><h1 className="font-display text-6xl lg:text-8xl max-w-4xl animate-fade-in-up">{page.title}</h1><p className="mt-10 text-xl lg:text-2xl font-light leading-relaxed max-w-3xl text-noir-600">{page.intro}</p><div className="mt-20 grid md:grid-cols-2 gap-x-16 gap-y-12 border-t border-noir-950/15 pt-10">{page.sections.map(section => <section key={section.title}><p className="text-luxury-caps text-noir-400 mb-4">{section.title}</p><p className="text-noir-600">{section.body}</p></section>)}</div>{params.info === 'size-guide' && <SizeCharts />}<Link href="/" className="link-editorial inline-block mt-20 text-sm">Return home</Link></div></div>
+}
+
+function SizeCharts() {
+  return (
+    <div className="mt-20 space-y-16">
+      {SIZE_CHARTS.map((chart) => (
+        <section key={chart.id} id={chart.id} className="scroll-mt-32">
+          <h2 className="font-display text-3xl lg:text-4xl">{chart.title}</h2>
+          <p className="mt-2 text-sm text-noir-500">{chart.styles}</p>
+          <div className="mt-6 border-t border-noir-950/15">
+            <table className="w-full text-xs sm:text-sm tabular-nums">
+              <thead>
+                <tr className="text-left">
+                  {SIZE_CHART_COLUMNS.map((column, i) => (
+                    <th key={column} scope="col" className="py-3 pr-2 sm:pr-4 align-bottom text-[10px] sm:text-xs uppercase tracking-wider font-normal text-noir-400">
+                      {column}{i > 0 && <span className="block normal-case tracking-normal">cm</span>}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-noir-950/10 border-t border-noir-950/10">
+                {chart.rows.map(([size, ...values]) => (
+                  <tr key={size}>
+                    <th scope="row" className="py-3 pr-2 sm:pr-4 text-left font-medium text-noir-900">{size}</th>
+                    {values.map((value, i) => <td key={i} className="py-3 pr-2 sm:pr-4 text-noir-600">{value}</td>)}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      ))}
+    </div>
+  )
 }

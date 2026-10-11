@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { sizeGuideHref } from '@/lib/size-charts'
 import { useParams } from 'next/navigation'
 import { Heart, ShoppingBag, Minus, Plus, ChevronLeft, ChevronRight, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -267,7 +268,7 @@ export default function ProductDetailPage() {
             <div className="mb-7 border-y border-noir-950/10 py-5">
               <div className="mb-3 flex items-center justify-between">
                 <span className="text-xs font-medium uppercase tracking-[0.18em] text-noir-700">Select size</span>
-                <Link href="/size-guide" className="text-xs text-noir-500 underline decoration-noir-300 underline-offset-4 hover:text-noir-950">Size guide</Link>
+                <Link href={sizeGuideHref(product.category?.slug)} className="text-xs text-noir-500 underline decoration-noir-300 underline-offset-4 hover:text-noir-950">Size guide</Link>
               </div>
               <div className="flex flex-wrap gap-2" role="group" aria-label="Available sizes">
                 {product.attributes.sizes.map((size: string) => (
