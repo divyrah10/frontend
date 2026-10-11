@@ -67,6 +67,20 @@ export default function ProductDetailPage() {
     fetchProduct()
   }, [slug])
 
+  // Per-size stock is tracked once an admin has entered it; until then the total applies.
+  const sizeStock = product?.size_stock || {}
+  const tracksSizes = Object.keys(sizeStock).length > 0
+  const isSizeSoldOut = (size: string) => tracksSizes && !(sizeStock[size] > 0)
+  const availableForSelection = tracksSizes
+    ? (selectedSize ? sizeStock[selectedSize] || 0 : 0)
+    : product?.stock_quantity || 0
+
+  const selectSize = (size: string) => {
+    setSelectedSize(size)
+    const stock = tracksSizes ? sizeStock[size] || 0 : product?.stock_quantity || 0
+    setQuantity((current) => Math.max(1, Math.min(current, stock)))
+  }
+
   const handleAddToCart = async () => {
     if (product) {
       const sizes: string[] = product.attributes?.sizes || []
@@ -261,9 +275,13 @@ export default function ProductDetailPage() {
                     key={size}
                     type="button"
                     aria-pressed={selectedSize === size}
-                    onClick={() => setSelectedSize(size)}
+                    disabled={isSizeSoldOut(size)}
+                    aria-label={isSizeSoldOut(size) ? `${size}, sold out` : size}
+                    onClick={() => selectSize(size)}
                     className={`h-11 min-w-12 border px-4 text-xs tracking-[0.12em] transition-all duration-300 ${
-                      selectedSize === size
+                      isSizeSoldOut(size)
+                        ? 'cursor-not-allowed border-noir-100 text-noir-300 line-through'
+                        : selectedSize === size
                         ? 'border-noir-950 bg-noir-950 text-white'
                         : 'border-noir-200 bg-transparent text-noir-700 hover:border-noir-950'
                     }`}
@@ -290,13 +308,17 @@ export default function ProductDetailPage() {
                   <span className="px-5 py-3 min-w-[60px] text-center font-medium text-noir-900">{quantity}</span>
                   <button
                     className="p-3 hover:bg-cream-100 transition-colors text-noir-700"
-                    onClick={() => setQuantity(Math.min(product.stock_quantity, quantity + 1))}
+                    onClick={() => setQuantity(Math.max(1, Math.min(availableForSelection, quantity + 1)))}
                   >
                     <Plus size={16} />
                   </button>
                 </div>
                 <span className="text-sm text-noir-500">
-                  {product.stock_quantity} in stock
+                  {tracksSizes
+                    ? selectedSize
+                      ? availableForSelection <= 5 ? `Only ${availableForSelection} left in ${selectedSize}` : 'In stock'
+                      : 'Select a size'
+                    : `${product.stock_quantity} in stock`}
                 </span>
               </div>
 

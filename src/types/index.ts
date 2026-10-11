@@ -39,6 +39,7 @@ export interface Product {
   compare_at_price?: number
   sku?: string
   stock_quantity: number
+  size_stock?: Record<string, number>
   category?: Category
   images: string[]
   attributes: Record<string, any>

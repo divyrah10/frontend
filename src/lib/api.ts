@@ -271,6 +271,8 @@ export const inventoryApi = {
   addStock: (productId: string, quantity: number) =>
     api.post(`/admin/inventory/${productId}/add-stock`, { quantity }),
   getLowStockCount: () => api.get('/admin/inventory/low-stock-count'),
+  updateSizeStock: (productId: string, sizeStock: Record<string, number>) =>
+    api.put(`/admin/inventory/${productId}/sizes`, { size_stock: sizeStock }),
 }
 
 // Admin Setup API
