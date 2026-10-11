@@ -85,8 +85,47 @@ export default function AdminProductsPage() {
         </form>
       </div>
 
+      {/* Phones: cards, so stock, status and the edit/delete actions stay on screen. */}
+      <div className="md:hidden space-y-3">
+        {isLoading ? (
+          <p className="py-8 text-center text-sm text-accent-500">Loading...</p>
+        ) : products.length > 0 ? (
+          products.map((product) => (
+            <div key={product.id} className="flex gap-3 rounded-lg border border-accent-100 bg-white p-3">
+              <div className="h-16 w-16 shrink-0 overflow-hidden rounded bg-accent-100">
+                {product.images[0] ? (
+                  <Image src={product.images[0]} alt="" width={64} height={64} className="h-full w-full object-cover" />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-xs text-accent-300">No img</div>
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium">{product.name}</p>
+                <p className="text-xs text-accent-500">
+                  {formatPrice(product.price)} · <span className={product.stock_quantity <= 5 ? 'text-red-600' : ''}>{product.stock_quantity} in stock</span>
+                </p>
+                <div className="mt-1.5 flex flex-wrap gap-1">
+                  {product.is_active ? <Badge variant="success">Active</Badge> : <Badge variant="secondary">Inactive</Badge>}
+                  {product.is_featured && <Badge>Featured</Badge>}
+                </div>
+              </div>
+              <div className="flex shrink-0 flex-col gap-1">
+                <Link href={`/admin/products/${product.id}`} aria-label={`Edit ${product.name}`}>
+                  <Button size="sm" variant="ghost"><Edit size={16} /></Button>
+                </Link>
+                <Button size="sm" variant="ghost" className="text-red-500 hover:text-red-600" onClick={() => handleDelete(product.id)} aria-label={`Delete ${product.name}`}>
+                  <Trash2 size={16} />
+                </Button>
+              </div>
+            </div>
+          ))
+        ) : (
+          <p className="py-8 text-center text-sm text-accent-500">No products found</p>
+        )}
+      </div>
+
       {/* Products Table */}
-      <div className="bg-white rounded-lg border border-accent-100 overflow-hidden">
+      <div className="hidden md:block bg-white rounded-lg border border-accent-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-accent-50 border-b border-accent-100">

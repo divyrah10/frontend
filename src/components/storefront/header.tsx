@@ -3,6 +3,8 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
+import { usePathname } from 'next/navigation'
 import { Search, ShoppingBag, Heart, User, X, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuthStore } from '@/stores/auth'
@@ -22,8 +24,21 @@ export function Header() {
   const [searchQuery, setSearchQuery] = useState('')
   const [isScrolled, setIsScrolled] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const searchInputRef = useRef<HTMLInputElement>(null)
   const userMenuRef = useRef<HTMLDivElement>(null)
+  const pathname = usePathname()
+
+  useEffect(() => setMounted(true), [])
+
+  // Close the menu on navigation, and stop the page scrolling underneath it.
+  useEffect(() => setIsMenuOpen(false), [pathname])
+  useEffect(() => {
+    if (!isMenuOpen) return
+    const previous = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = previous }
+  }, [isMenuOpen])
 
   const { user, isAuthenticated, logout, checkAuth } = useAuthStore()
   const { cart, fetchCart } = useCartStore()
@@ -315,8 +330,10 @@ export function Header() {
         </div>
       </div>
 
-      {/* Mobile Menu - Full Screen Overlay */}
-      <div className={`lg:hidden fixed inset-0 z-40 transition-all duration-500 ${
+      {/* Mobile menu: portalled to <body> because the header's backdrop-blur makes it the
+          containing block for position:fixed, which squeezed the overlay into the header. */}
+      {mounted && createPortal(
+      <div className={`lg:hidden fixed inset-0 z-[60] transition-all duration-500 ${
         isMenuOpen ? 'pointer-events-auto' : 'pointer-events-none'
       }`}>
         {/* Backdrop */}
@@ -328,11 +345,11 @@ export function Header() {
         />
 
         {/* Menu Panel */}
-        <div className={`absolute top-0 left-0 w-4/5 max-w-sm h-full bg-white shadow-2xl transition-transform duration-500 ease-luxury ${
-          isMenuOpen ? 'translate-x-0' : '-translate-x-full'
+        <div className={`absolute top-0 left-0 flex h-full w-4/5 max-w-sm flex-col bg-white transition-[transform,box-shadow] duration-500 ease-luxury ${
+          isMenuOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full shadow-none'
         }`}>
           {/* Menu Header */}
-          <div className="flex items-center justify-between p-6 border-b border-noir-100">
+          <div className="flex shrink-0 items-center justify-between p-6 border-b border-noir-100">
             <Link href="/" onClick={() => setIsMenuOpen(false)}>
               <Image
                 src="/logo-black.png"
@@ -345,13 +362,14 @@ export function Header() {
             <button
               onClick={() => setIsMenuOpen(false)}
               className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-noir-100 transition-colors"
+              aria-label="Close menu"
             >
               <X size={20} className="text-noir-700" />
             </button>
           </div>
 
           {/* Navigation Links */}
-          <nav className="p-6">
+          <nav className="min-h-0 flex-1 overflow-y-auto p-6">
             {navLinks.map((link, index) => (
               <Link
                 key={link.href}
@@ -369,7 +387,7 @@ export function Header() {
 
           {/* User Section */}
           {isAuthenticated ? (
-            <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-cream-100 to-transparent">
+            <div className="shrink-0 border-t border-noir-100 bg-cream-50 p-6">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 rounded-full bg-noir-200 flex items-center justify-center">
                   <User size={18} className="text-noir-600" />
@@ -391,7 +409,7 @@ export function Header() {
               </Button>
             </div>
           ) : (
-            <div className="absolute bottom-0 left-0 right-0 p-6">
+            <div className="shrink-0 border-t border-noir-100 p-6">
               <Link href="/login" onClick={() => setIsMenuOpen(false)}>
                 <Button className="w-full">
                   Sign In
@@ -401,6 +419,7 @@ export function Header() {
           )}
         </div>
       </div>
+      , document.body)}
     </header>
   )
 }

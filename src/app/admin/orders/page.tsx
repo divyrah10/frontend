@@ -164,8 +164,49 @@ export default function AdminOrdersPage() {
         </select>
       </div>
 
+      {/* Phones: cards, so status and the open button aren't hidden behind a sideways scroll. */}
+      <div className="md:hidden space-y-3">
+        {isLoading ? (
+          <p className="py-8 text-center text-sm text-accent-500">Loading...</p>
+        ) : orders.length > 0 ? (
+          orders.map((order) => (
+            <div key={order.id} className="rounded-lg border border-accent-100 bg-white p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium">{order.order_number}</p>
+                  <p className="text-xs text-accent-500">
+                    {order.shipping_address.full_name} · {order.shipping_address.city} · {new Date(order.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+                <p className="shrink-0 text-sm font-medium">{formatPrice(order.total)}</p>
+              </div>
+              <div className="mt-3 flex items-center justify-between gap-3">
+                <div className="relative">
+                  <select
+                    className="appearance-none rounded border border-accent-200 bg-white py-1.5 pl-2 pr-7 text-sm"
+                    value={order.status}
+                    onChange={(e) => handleStatusUpdate(order.id, e.target.value)}
+                    aria-label={`Status for ${order.order_number}`}
+                  >
+                    {statusOptions.slice(1).map((option) => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+                  <ChevronDown size={14} className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-accent-400" />
+                </div>
+                <Button size="sm" variant="outline" onClick={() => openOrder(order)}>
+                  <Eye size={15} className="mr-1.5" /> Open
+                </Button>
+              </div>
+            </div>
+          ))
+        ) : (
+          <p className="py-8 text-center text-sm text-accent-500">No orders found</p>
+        )}
+      </div>
+
       {/* Orders Table */}
-      <div className="bg-white rounded-lg border border-accent-100 overflow-hidden">
+      <div className="hidden md:block bg-white rounded-lg border border-accent-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-accent-50 border-b border-accent-100">
