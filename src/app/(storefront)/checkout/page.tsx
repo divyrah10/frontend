@@ -362,7 +362,7 @@ export default function CheckoutPage() {
               {cart.items.map((item) => (
                 <div key={item.id} className="flex justify-between text-sm">
                   <span className="text-accent-600">
-                    {item.product_name} x {item.quantity}
+                    {item.product_name}{item.attributes?.size ? ` · Size ${item.attributes.size}` : ''} x {item.quantity}
                   </span>
                   <span>{formatPrice(item.subtotal)}</span>
                 </div>

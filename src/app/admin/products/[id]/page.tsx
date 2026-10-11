@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowLeft, Upload, X, Trash2, Plus, Info, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, Upload, X, Trash2, Plus, Info, AlertTriangle, ChevronLeft, ChevronRight, Star, GripVertical } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -63,6 +63,8 @@ export default function EditProductPage() {
   const [existingImages, setExistingImages] = useState<string[]>([])
   const [newImages, setNewImages] = useState<File[]>([])
   const [newImagePreviews, setNewImagePreviews] = useState<string[]>([])
+  const [dragIndex, setDragIndex] = useState<number | null>(null)
+  const [tracksSizes, setTracksSizes] = useState(false)
 
   // Auto-calculate discount percentage when prices change
   useEffect(() => {
@@ -86,10 +88,15 @@ export default function EditProductPage() {
       const product: Product = productRes.data
       setCategories(categoriesRes.data)
       setExistingImages(product.images || [])
+      setTracksSizes(Object.keys(product.size_stock || {}).length > 0)
 
       // Parse attributes
       const attrs = product.attributes || {}
-      setGender(attrs.gender || '')
+      // Imported products have no stored gender; infer it from the category tree so they can be saved.
+      const categoryTrail = [product.category?.slug, ...categoriesRes.data
+        .filter((c: any) => c.id === product.category?.parent_id).map((c: any) => c.slug)].join(' ')
+      const inferredGender = /\bwomen/.test(categoryTrail) ? 'Women' : /\bmen/.test(categoryTrail) ? 'Men' : ''
+      setGender(attrs.gender || inferredGender)
       setSelectedSizes(attrs.sizes || [])
       setSelectedColors(attrs.colors || [])
       setTags(attrs.tags || [])
@@ -160,6 +167,17 @@ export default function EditProductPage() {
 
   const removeExistingImage = (index: number) => {
     setExistingImages(prev => prev.filter((_, i) => i !== index))
+  }
+
+  // Order matters: the first image is the cover on product cards and the product page.
+  const moveImage = (from: number, to: number) => {
+    setExistingImages(prev => {
+      if (to < 0 || to >= prev.length || from === to) return prev
+      const next = [...prev]
+      const [moved] = next.splice(from, 1)
+      next.splice(to, 0, moved)
+      return next
+    })
   }
 
   const toggleSize = (size: string) => {
@@ -241,20 +259,28 @@ export default function EditProductPage() {
 
       await productsApi.update(productId, productData)
 
-      // Upload new images
+      // Upload new images (the server appends them after the existing ones)
+      const failures: string[] = []
       if (newImages.length > 0) {
         toast.loading(`Uploading ${newImages.length} new image(s)...`, { id: 'upload' })
 
         for (let i = 0; i < newImages.length; i++) {
           try {
             await productsApi.uploadImage(productId, newImages[i])
-          } catch (uploadErr) {
-            console.error(`Failed to upload image ${i + 1}:`, uploadErr)
-            toast.error(`Failed to upload image ${i + 1}`)
+          } catch (uploadErr: any) {
+            const reason = uploadErr.response?.data?.detail || 'upload failed'
+            failures.push(`${newImages[i].name}: ${reason}`)
           }
         }
 
         toast.dismiss('upload')
+      }
+
+      if (failures.length > 0) {
+        const message = `Saved, but ${failures.length} image(s) didn't upload. ${failures[0]}`
+        setError(message)
+        toast.error(message, { duration: 8000 })
+        return // stay here so the images can be retried
       }
 
       toast.success('Product updated successfully!')
@@ -413,25 +439,52 @@ export default function EditProductPage() {
             {/* Images */}
             <div className="bg-white rounded-xl border border-noir-100 p-6 shadow-sm">
               <h2 className="font-medium text-noir-900 mb-4">Product Images</h2>
-              <p className="text-sm text-noir-500 mb-4">Manage product images. First image will be the main product image.</p>
+              <p className="text-sm text-noir-500 mb-4">
+                The first image is the main one shown in the shop. Drag to reorder, use the arrows, or tap ★ to make an image the main one.
+                New images are added at the end after saving.
+              </p>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {/* Existing images */}
                 {existingImages.map((image, index) => (
-                  <div key={`existing-${index}`} className="relative aspect-square bg-cream-100 rounded-lg overflow-hidden group">
-                    <Image src={image} alt={`Product image ${index + 1}`} fill className="object-cover" />
-                    {index === 0 && (
-                      <span className="absolute top-2 left-2 px-2 py-0.5 bg-noir-900 text-cream-50 text-2xs rounded">
-                        Main
-                      </span>
-                    )}
+                  <div
+                    key={image}
+                    draggable
+                    onDragStart={() => setDragIndex(index)}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={() => { if (dragIndex !== null) moveImage(dragIndex, index); setDragIndex(null) }}
+                    onDragEnd={() => setDragIndex(null)}
+                    className={`relative aspect-square bg-cream-100 rounded-lg overflow-hidden group cursor-grab active:cursor-grabbing ${
+                      dragIndex === index ? 'opacity-40' : ''
+                    } ${index === 0 ? 'ring-2 ring-noir-900' : ''}`}
+                  >
+                    <Image src={image} alt={`Product image ${index + 1}`} fill className="object-cover pointer-events-none" />
+                    <span className={`absolute top-2 left-2 px-2 py-0.5 text-2xs rounded ${index === 0 ? 'bg-noir-900 text-cream-50' : 'bg-white/85 text-noir-700'}`}>
+                      {index === 0 ? 'Main' : index + 1}
+                    </span>
+                    <GripVertical size={16} className="absolute top-2 left-1/2 -translate-x-1/2 text-white drop-shadow hidden sm:block opacity-0 group-hover:opacity-100" aria-hidden />
                     <button
                       type="button"
                       onClick={() => removeExistingImage(index)}
-                      className="absolute top-2 right-2 w-7 h-7 bg-noir-900/80 hover:bg-rose-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      aria-label={`Remove image ${index + 1}`}
+                      className="absolute top-2 right-2 w-7 h-7 bg-noir-900/80 hover:bg-rose-600 text-white rounded-full flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                     >
                       <X size={14} />
                     </button>
+                    <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-noir-900/70 px-1 py-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                      <button type="button" onClick={() => moveImage(index, index - 1)} disabled={index === 0}
+                        aria-label={`Move image ${index + 1} earlier`} className="p-1.5 text-white disabled:opacity-30">
+                        <ChevronLeft size={16} />
+                      </button>
+                      <button type="button" onClick={() => moveImage(index, 0)} disabled={index === 0}
+                        aria-label={`Make image ${index + 1} the main image`} className="p-1.5 text-white disabled:opacity-30">
+                        <Star size={15} fill={index === 0 ? 'currentColor' : 'none'} />
+                      </button>
+                      <button type="button" onClick={() => moveImage(index, index + 1)} disabled={index === existingImages.length - 1}
+                        aria-label={`Move image ${index + 1} later`} className="p-1.5 text-white disabled:opacity-30">
+                        <ChevronRight size={16} />
+                      </button>
+                    </div>
                   </div>
                 ))}
 
@@ -445,7 +498,8 @@ export default function EditProductPage() {
                     <button
                       type="button"
                       onClick={() => removeNewImage(index)}
-                      className="absolute top-2 right-2 w-7 h-7 bg-noir-900/80 hover:bg-rose-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      aria-label={`Remove new image ${index + 1}`}
+                      className="absolute top-2 right-2 w-7 h-7 bg-noir-900/80 hover:bg-rose-600 text-white rounded-full flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                     >
                       <X size={14} />
                     </button>
@@ -509,7 +563,13 @@ export default function EditProductPage() {
                     min="0"
                     value={formData.stock_quantity}
                     onChange={(e) => setFormData({ ...formData, stock_quantity: e.target.value })}
+                    disabled={tracksSizes}
                   />
+                  {tracksSizes && (
+                    <p className="mt-1 text-xs text-noir-500">
+                      Tracked per size. Change it in <Link href="/admin/inventory" className="underline">Inventory</Link>.
+                    </p>
+                  )}
                 </div>
 
                 {formData.is_on_sale && (

@@ -325,7 +325,10 @@ export default function AdminOrdersPage() {
                   <div key={item.id} className="p-3 border-b border-accent-100 last:border-b-0 flex justify-between">
                     <div>
                       <p className="text-sm font-medium">{item.product_name}</p>
-                      <p className="text-xs text-accent-500">Qty: {item.quantity}</p>
+                      <p className="text-xs text-accent-500">
+                        {item.attributes?.size && <span className="mr-2 inline-block rounded bg-accent-900 px-1.5 py-0.5 text-[10px] font-semibold tracking-wider text-white">SIZE {item.attributes.size}</span>}
+                        Qty: {item.quantity}
+                      </p>
                     </div>
                     <p className="text-sm font-medium">{formatPrice(item.subtotal)}</p>
                   </div>

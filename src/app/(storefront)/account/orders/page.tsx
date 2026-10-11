@@ -86,7 +86,7 @@ export default function AccountOrdersPage() {
                   {openOrder === order.id && (
                     <div className="px-5 lg:px-7 pb-7 animate-fade-in">
                       <div className="hairline-t pt-5 space-y-3">
-                        {order.items.map(item => <div key={item.id} className="flex justify-between text-sm"><span>{item.product_name} × {item.quantity}</span><span>{formatPrice(item.subtotal)}</span></div>)}
+                        {order.items.map(item => <div key={item.id} className="flex justify-between text-sm"><span>{item.product_name}{item.attributes?.size ? ` · Size ${item.attributes.size}` : ''} × {item.quantity}</span><span>{formatPrice(item.subtotal)}</span></div>)}
                       </div>
                       <div className="mt-6 flex justify-between items-center gap-4">
                         <p className="text-sm text-noir-500">Shipping to {order.shipping_address.city}</p>

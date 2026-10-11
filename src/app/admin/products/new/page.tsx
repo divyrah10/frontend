@@ -208,16 +208,22 @@ export default function NewProductPage() {
       if (images.length > 0) {
         toast.loading(`Uploading ${images.length} image(s)...`, { id: 'upload' })
 
+        const failures: string[] = []
         for (let i = 0; i < images.length; i++) {
           try {
             await productsApi.uploadImage(productId, images[i])
-          } catch (uploadErr) {
-            console.error(`Failed to upload image ${i + 1}:`, uploadErr)
-            toast.error(`Failed to upload image ${i + 1}`)
+          } catch (uploadErr: any) {
+            failures.push(`${images[i].name}: ${uploadErr.response?.data?.detail || 'upload failed'}`)
           }
         }
 
         toast.dismiss('upload')
+        if (failures.length > 0) {
+          // The product exists now; send them to its edit page to retry the images.
+          toast.error(`Product created, but ${failures.length} image(s) didn't upload. ${failures[0]}`, { duration: 8000 })
+          router.push(`/admin/products/${productId}`)
+          return
+        }
       }
 
       toast.success('Product created successfully!')
