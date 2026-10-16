@@ -12,6 +12,7 @@ import { addressesApi, ordersApi, paymentsApi } from '@/lib/api'
 import { Address } from '@/types'
 import { formatPrice, apiErrorMessage } from '@/lib/utils'
 import toast from 'react-hot-toast'
+import { metaBrowserIds, trackInitiateCheckout, trackPurchase } from '@/lib/meta-pixel'
 
 declare global {
   interface Window {
@@ -140,6 +141,14 @@ export default function CheckoutPage() {
     }
 
     setIsProcessing(true)
+    const pixelItems = cart.items.map((item) => ({
+      product_id: item.product_id,
+      sku: item.product_sku,
+      size: item.attributes?.size,
+      quantity: item.quantity,
+      price: Number(item.product_price),
+    }))
+    trackInitiateCheckout(pixelItems)
     try {
       // Create order
       const orderResponse = await ordersApi.create({
@@ -174,7 +183,9 @@ export default function CheckoutPage() {
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
+              ...metaBrowserIds(),
             })
+            trackPurchase(order.order_number, pixelItems, Number(order.total))
             await clearCart()
             router.push(`/account/orders?success=${order.order_number}`)
           } catch (error) {

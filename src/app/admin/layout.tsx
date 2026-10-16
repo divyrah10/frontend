@@ -16,6 +16,7 @@ import {
   MessageSquare,
   Tags,
   Warehouse,
+  Megaphone,
 } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth'
 
@@ -28,6 +29,7 @@ const navigation = [
   { name: 'Customers', href: '/admin/customers', icon: Users },
   { name: 'Reviews', href: '/admin/reviews', icon: MessageSquare },
   { name: 'Reports', href: '/admin/reports', icon: BarChart3 },
+  { name: 'Meta Ads', href: '/admin/meta-ads', icon: Megaphone },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
 ]
 

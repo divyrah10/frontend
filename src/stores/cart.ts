@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { Cart } from '@/types'
 import { cartApi } from '@/lib/api'
+import { trackAddToCart } from '@/lib/meta-pixel'
 
 interface CartState {
   cart: Cart | null
@@ -34,6 +35,18 @@ export const useCartStore = create<CartState>((set) => ({
     try {
       const response = await cartApi.add(productId, quantity, attributes)
       set({ cart: response.data })
+      const item = (response.data as Cart).items.find(
+        (i) => i.product_id === productId && (i.attributes?.size || null) === (attributes.size || null),
+      )
+      if (item) {
+        trackAddToCart({
+          product_id: productId,
+          sku: item.product_sku,
+          size: attributes.size,
+          quantity,
+          price: Number(item.product_price),
+        })
+      }
     } finally {
       set({ isLoading: false })
     }

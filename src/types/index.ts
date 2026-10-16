@@ -58,6 +58,7 @@ export interface CartItem {
   product_id: string
   product_name: string
   product_slug?: string
+  product_sku?: string | null
   product_image?: string
   product_price: number
   quantity: number

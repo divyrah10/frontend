@@ -19,7 +19,7 @@ const features = [
   {
     index: '02',
     title: 'Easy Returns',
-    description: '30-day return policy',
+    description: '7-day return & exchange',
   },
   {
     index: '03',

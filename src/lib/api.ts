@@ -217,7 +217,14 @@ export const addressesApi = {
 export const paymentsApi = {
   createOrder: (orderId: string, currency: string = 'INR') =>
     api.post('/payments/create-order', { order_id: orderId, currency }),
-  verify: (data: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) =>
+  verify: (data: {
+    razorpay_order_id: string
+    razorpay_payment_id: string
+    razorpay_signature: string
+    fbp?: string
+    fbc?: string
+    event_source_url?: string
+  }) =>
     api.post('/payments/verify', data),
 }
 
@@ -260,6 +267,15 @@ export const dashboardApi = {
     api.get('/admin/dashboard/sales-chart', { params: { days } }),
   getTopProducts: (limit?: number) =>
     api.get('/admin/dashboard/top-products', { params: { limit } }),
+}
+
+// Admin Meta Ads API
+export const metaAdsApi = {
+  status: () => api.get('/admin/meta/status'),
+  insights: (datePreset: string) =>
+    api.get('/admin/meta/insights', { params: { date_preset: datePreset } }),
+  sendTestEvent: (testEventCode: string, orderNumber?: string) =>
+    api.post('/admin/meta/test-event', { test_event_code: testEventCode, order_number: orderNumber || undefined }),
 }
 
 // Inventory API

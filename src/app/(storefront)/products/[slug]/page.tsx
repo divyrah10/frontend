@@ -16,6 +16,7 @@ import { useAuthStore } from '@/stores/auth'
 import { Product, Review, ReviewStats } from '@/types'
 import { formatPrice } from '@/lib/utils'
 import toast from 'react-hot-toast'
+import { trackViewContent } from '@/lib/meta-pixel'
 
 export default function ProductDetailPage() {
   const { slug } = useParams()
@@ -42,6 +43,7 @@ export default function ProductDetailPage() {
         const response = await productsApi.getBySlug(slug as string)
         setProduct(response.data)
         setSelectedSize('')
+        trackViewContent(response.data)
 
         // Fetch reviews
         const [reviewsRes, statsRes] = await Promise.all([
