@@ -9,6 +9,8 @@ import { addressesApi } from '@/lib/api'
 import { Address } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { StateSelect } from '@/components/ui/state-select'
+import { PINCODE_HINTS, usePincodeAutofill } from '@/lib/india-address'
 
 const emptyAddress = { type: 'shipping', full_name: '', phone: '', address_line1: '', address_line2: '', city: '', state: '', postal_code: '', country: 'India', is_default: false }
 
@@ -16,6 +18,7 @@ export default function AddressesPage() {
   const [addresses, setAddresses] = useState<Address[]>([])
   const [form, setForm] = useState(emptyAddress)
   const [showForm, setShowForm] = useState(false)
+  const pincodeStatus = usePincodeAutofill(form.postal_code, (place) => setForm((current) => ({ ...current, ...place })))
 
   const load = async () => setAddresses((await addressesApi.list()).data)
   useEffect(() => { load().catch(() => toast.error('Could not load addresses')) }, [])
@@ -62,7 +65,14 @@ export default function AddressesPage() {
           <form onSubmit={submit} className="mt-8 bg-noir-950 text-white p-7 lg:p-10 animate-fade-in-up">
             <h2 className="text-3xl mb-7">New destination</h2>
             <div className="grid md:grid-cols-2 gap-4">
-              {(['full_name','phone','address_line1','address_line2','city','state','postal_code','country'] as const).map(key => <Input key={key} required={key !== 'address_line2'} type={key === 'phone' ? 'tel' : 'text'} placeholder={key === 'phone' ? 'mobile number (10 digits)' : key.replaceAll('_',' ')} value={String(form[key])} onChange={e => setForm({...form,[key]:e.target.value})} className="bg-white text-noir-950" />)}
+              {(['full_name','phone','address_line1','address_line2'] as const).map(key => <Input key={key} required={key !== 'address_line2'} type={key === 'phone' ? 'tel' : 'text'} placeholder={key === 'phone' ? 'mobile number (10 digits)' : key.replaceAll('_',' ')} value={String(form[key])} onChange={e => setForm({...form,[key]:e.target.value})} className="bg-white text-noir-950" />)}
+              <div>
+                <Input required inputMode="numeric" autoComplete="postal-code" maxLength={6} pattern="\d{6}" title="6-digit PIN code" placeholder="PIN code" value={form.postal_code} onChange={e => setForm({...form, postal_code: e.target.value.replace(/\D/g, '')})} className="bg-white text-noir-950" />
+                {PINCODE_HINTS[pincodeStatus] && <p className="mt-1 text-xs text-white/60">{PINCODE_HINTS[pincodeStatus]}</p>}
+              </div>
+              <Input required autoComplete="address-level2" placeholder="city" value={form.city} onChange={e => setForm({...form, city: e.target.value})} className="bg-white text-noir-950" />
+              <StateSelect required autoComplete="address-level1" value={form.state} onChange={e => setForm({...form, state: e.target.value})} />
+              <Input required placeholder="country" value={form.country} onChange={e => setForm({...form, country: e.target.value})} className="bg-white text-noir-950" />
             </div>
             <div className="mt-6 flex gap-3"><Button type="submit">Save address</Button><Button type="button" variant="ghost" className="text-white" onClick={() => setShowForm(false)}>Cancel</Button></div>
           </form>

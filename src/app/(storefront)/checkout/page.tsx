@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { ArrowRight, Check, LockKeyhole, ShieldCheck, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { StateSelect } from '@/components/ui/state-select'
 import { useCartStore } from '@/stores/cart'
 import { useAuthHydrated, useAuthStore } from '@/stores/auth'
 import { addressesApi, ordersApi, paymentsApi } from '@/lib/api'
@@ -13,6 +14,7 @@ import { Address } from '@/types'
 import { formatPrice, apiErrorMessage } from '@/lib/utils'
 import toast from 'react-hot-toast'
 import { metaBrowserIds, trackInitiateCheckout, trackPurchase } from '@/lib/meta-pixel'
+import { PINCODE_HINTS, usePincodeAutofill } from '@/lib/india-address'
 
 declare global {
   interface Window {
@@ -47,6 +49,9 @@ export default function CheckoutPage() {
     postal_code: '',
     country: 'India',
   })
+  const pincodeStatus = usePincodeAutofill(newAddress.postal_code, (place) =>
+    setNewAddress((current) => ({ ...current, ...place }))
+  )
 
   useEffect(() => {
     if (!authHydrated) return
@@ -332,10 +337,27 @@ export default function CheckoutPage() {
                     onChange={(e) => setNewAddress({ ...newAddress, address_line2: e.target.value })}
                   />
                 </div>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">PIN Code</label>
+                    <Input
+                      inputMode="numeric"
+                      autoComplete="postal-code"
+                      maxLength={6}
+                      pattern="\d{6}"
+                      title="6-digit PIN code"
+                      value={newAddress.postal_code}
+                      onChange={(e) => setNewAddress({ ...newAddress, postal_code: e.target.value.replace(/\D/g, '') })}
+                      required
+                    />
+                    {PINCODE_HINTS[pincodeStatus] && (
+                      <p className="mt-1 text-xs text-accent-500">{PINCODE_HINTS[pincodeStatus]}</p>
+                    )}
+                  </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">City</label>
                     <Input
+                      autoComplete="address-level2"
                       value={newAddress.city}
                       onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
                       required
@@ -343,17 +365,10 @@ export default function CheckoutPage() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">State</label>
-                    <Input
+                    <StateSelect
+                      autoComplete="address-level1"
                       value={newAddress.state}
                       onChange={(e) => setNewAddress({ ...newAddress, state: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">PIN Code</label>
-                    <Input
-                      value={newAddress.postal_code}
-                      onChange={(e) => setNewAddress({ ...newAddress, postal_code: e.target.value })}
                       required
                     />
                   </div>
